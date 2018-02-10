@@ -1,0 +1,10 @@
+\BOOKMARK [1][-]{section.1}{Calculate the mean vector of the 6 numerical values.}{}% 1
+\BOOKMARK [1][-]{section.2}{Compute the centered data matrix.}{}% 2
+\BOOKMARK [1][-]{section.3}{Compute the variance-covariance matrix of the data.}{}% 3
+\BOOKMARK [1][-]{section.4}{Compute the correlation matrix. Which variables show strong linear association?}{}% 4
+\BOOKMARK [1][-]{section.5}{Compute the matrix of standardized variables.}{}% 5
+\BOOKMARK [1][-]{section.6}{Compute the variance-covariance matrix of standardized variables. What do you observe?}{}% 6
+\BOOKMARK [1][-]{section.7}{Compute the matrix of Euclidean distances between the individuals, using the original data matrix. Which variable\(s\) contribute\(s\) most to the Euclidean distances? What could you do to reduce its/their influence?}{}% 7
+\BOOKMARK [1][-]{section.8}{Compute the matrix of Mahalanobis distances between the individuals.}{}% 8
+\BOOKMARK [1][-]{section.9}{Does the pair of observations with the largest Euclidean distance also have the largest Mahalanobis distance? Why so or why not?}{}% 9
+\BOOKMARK [1][-]{section.10}{Is it theoretically possible for the Mahalanobis distance matrix and the Euclidean distance matrix to be identical? Explain your answer.}{}% 10
