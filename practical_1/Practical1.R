@@ -1,4 +1,5 @@
-setwd("/home/eudald/Downloads/Practical1/")
+# usa el path del directorio donde hayas copiado el repo de github.
+setwd("~/KOLMOGOROV/MultivariateAnalysis/practical1_multivariate_data_analysis/")
 
 source("Utils.R")
 
