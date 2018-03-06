@@ -1,0 +1,266 @@
+---
+title: 'Exercise set #2. MVA: Principal Component Analysis'
+author: "Eudald Romo Grau and Laura Santulario Verd?"
+output: pdf_document
+---
+  
+  ```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+__1.__ Import the data file in the R environment using the read.table function. Make boxplots of these variables using the boxplot function. Make a scatterplot matrix of the nine body measurements. Comment your results. Compute the correlation
+matrix and include it in your report.  
+
+## Boxplot  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+datos <- read.table("BodyStudy.dat", header = TRUE)
+datos <- as.matrix(datos)
+
+# Boxplot
+par(las = 2)
+boxes <- boxplot(datos[ , 1:9],  ylab = "Measurements (cm)")
+# title("Boxplot")
+
+Biacr.quant <- quantile(datos[ , 1], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Biili.quant <- quantile(datos[ , 2], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Bitro.quant <- quantile(datos[ , 3], probs = c(0.25, 0.5, 0.75), names = FALSE)
+ChestDep.quant <- quantile(datos[ , 4], probs = c(0.25, 0.5, 0.75), names = FALSE)
+ChestDia.quant <- quantile(datos[ , 5], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Elbow.quant <- quantile(datos[ , 6], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Wrist.quant <- quantile(datos[ , 7], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Knee.quant <- quantile(datos[ , 8], probs = c(0.25, 0.5, 0.75), names = FALSE)
+Ankle.quant <- quantile(datos[ , 9], probs = c(0.25, 0.5, 0.75), names = FALSE)
+
+quantile.matrix <- as.matrix(rbind(c(Biacr.quant[1] - 1.5 * (Biacr.quant[3] - Biacr.quant[1]), Biacr.quant, Biacr.quant[3] + 1.5 * (Biacr.quant[3] - Biacr.quant[1])),
+  c(Biili.quant[1] - 1.5 * (Biili.quant[3] - Biili.quant[1]), Biili.quant, Biili.quant[3] + 1.5 * (Biili.quant[3] - Biili.quant[1])),
+  c(Bitro.quant[1] - 1.5 * (Bitro.quant[3] - Bitro.quant[1]), Bitro.quant, Bitro.quant[3] + 1.5 * (Bitro.quant[3] - Bitro.quant[1])),
+  c(ChestDep.quant[1] - 1.5 * (ChestDep.quant[3] - ChestDep.quant[1]), ChestDep.quant, ChestDep.quant[3] + 1.5 * (ChestDep.quant[3] - ChestDep.quant[1])),
+  c(ChestDia.quant[1] - 1.5 * (ChestDia.quant[3] - ChestDia.quant[1]), ChestDia.quant, ChestDia.quant[3] + 1.5 * (ChestDia.quant[3] - ChestDia.quant[1])),
+  c(Elbow.quant[1] - 1.5 * (Elbow.quant[3] - Elbow.quant[1]), Elbow.quant, Elbow.quant[3] + 1.5 * (Elbow.quant[3] - Elbow.quant[1])), 
+  c(Wrist.quant[1] - 1.5 * (Wrist.quant[3] - Wrist.quant[1]), Wrist.quant, Wrist.quant[3] + 1.5 * (Wrist.quant[3] - Wrist.quant[1])),
+  c(Knee.quant[1] - 1.5 * (Knee.quant[3] - Knee.quant[1]), Knee.quant, Knee.quant[3] + 1.5 * (Knee.quant[3] - Knee.quant[1])),
+  c(Ankle.quant[1] - 1.5 * (Ankle.quant[3] - Ankle.quant[1]), Ankle.quant, Ankle.quant[3] + 1.5 * (Ankle.quant[3] - Ankle.quant[1]))), ncol = 5, nrow = 9)
+
+Biacr.outliers <- which(datos[, 1] > quantile.matrix[1, 5] | datos[, 1] < quantile.matrix[1, 1])
+Biili.outliers <- which(datos[, 2] > quantile.matrix[2, 5] | datos[, 2] < quantile.matrix[2, 1])
+Bitro.outliers <- which(datos[, 3] > quantile.matrix[3, 5] | datos[, 3] < quantile.matrix[3, 1])
+ChestDep.outliers <- which(datos[, 4] > quantile.matrix[4, 5] | datos[, 4] < quantile.matrix[4, 1])
+ChestDia.outliers <- which(datos[, 5] > quantile.matrix[5, 5] | datos[, 5] < quantile.matrix[5, 1])
+Elbow.outliers <- which(datos[, 6] > quantile.matrix[6, 5] | datos[, 6] < quantile.matrix[6, 1])
+Wrist.outliers <- which(datos[, 7] > quantile.matrix[7, 5] | datos[, 7] < quantile.matrix[7, 1])
+Knee.outliers <- which(datos[, 8] > quantile.matrix[8, 5] | datos[, 8] < quantile.matrix[8, 1])
+Ankle.outliers <- which(datos[, 9] > quantile.matrix[9, 5] | datos[, 9] < quantile.matrix[9, 1])
+```
+
+It can be concluded from the boxplot above that all variables have the same similar values both in magnitude order of the median and in variability (as in 1st-3rd quartile spread). Two major groups can be distinguished: measurements that describe the shape of the Trunk (Biacromial, biliiac, and Bitrochanteric diameters together wiht chest depth and diameter) and limb measurements (sums of elbow, wrist, knee, and ankle diameters). The first group has higher spreads. On first sight, this could be attributed to the fact that it also has higer median values, but ChestDep and Knee have practically the same mean value and ChestDep's spread is roughly the double of Knee's. So, it can be inferred that women have more variability in the shape of the trunk than in the width of their limb bones (data doesn't say anything about lengths or about anything that's not a bone measurement). Also, it can be seen that all variables have symmetric (non-skewed) boxes. It is a common practice to model human physical characteristics (height, weight, ...) after normal distributions. Even though symmetry of the boxes doesn't imply normal distribution, it is an indicator that we at least won't incur in skewness misrepresentation if we model them after normal distributions (a step usually implicitly taken in many general statistics analysis).
+
+
+## Scatterplot  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+scatter <- pairs(datos[, 1:9], asp = 1)
+```
+
+
+One main conclusion obtained from the scatter plots is that all the correlations are positive. This makes sense, as all the measures show the size of a woman. There are no complemetary pairs of values, as with some examples seen in class (like width of a image and horizontal margins in a fixed size photo) so, generally, as bigger the women is, as bigger her bone diameters (and chest depth) will be.
+It's difficult to compare the correlations between the different pairs of data, because different pairs have different x and y ranges. We deemed better to keep them this way for a qualitative analysis and keep the quantitative one for the correlation matrix. 
+
+## Correlation matrix  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+corr.matrix <- round(cor(datos[ , 1:9]), 2)
+head(corr.matrix, 5)  
+```
+
+Only the first 5 rows of the correlation matrix are shown, but it's worth noting that, again, there is a clear distinction between the Trunk and Limbs groups. All the Trunk variables have relatively lower inter-correlations that the Limb ones, with the exception of the __Biili - Bitro__ pair. This pair corresponds to the shape of women's pelvis (the upper pelvis width and lower pelvis plus leg bones width). The cross-correlations Trunk-Limbs are fairly low (with some exceptions like __Knee - Bitro__).
+
+In conclusion, the intuitions that we can obtain from this first exercise is that there's more variability in the widths of the trunk than on the widhts of the limbs, but that this second group is generally more correlated. Furthermore, inside the trunk there's low correlation between the widths at different regions of the trunk, but that the pelvic region presents a higher correlation.
+
+__2.__ We do a PCA, using the covariance matrix. Compute a table with the decomposition of the variance obtained in PCA, reporting variances of components, percentages of explained variance, and cumulative percentages of explained variance. You can make use of R's function __princomp__ for this purpose. How many
+components do you think you need to adequately describe this data set? Make a scree-plot of the eigenvalues to help you making your decision. Include all results and answers in your report.  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+cov.matrix <- cov(datos[ , 1:9])
+
+eigenvectors <- eigen(cov.matrix, symmetric = TRUE, only.values = FALSE)$vectors
+centered.datos <- scale(datos[ , 1:9], scale = FALSE)
+PCA <- centered.datos[ , 1:9]%*%eigenvectors
+
+# Variances of components
+princomps <- princomp(datos[,1:9])
+# comp.var <- eigen(cov.matrix, symmetric = TRUE, only.values = FALSE)$values
+comp.var <- princomps$sdev * princomps$sdev
+perc.var <- (comp.var/sum(comp.var))*100
+cum.var <- (cumsum(comp.var)/sum(comp.var))*100
+tabla.exp.var <- rbind(comp.var, perc.var, cum.var)
+library(knitr)
+kable(tabla.exp.var, format = "markdown", digits = 2,
+col.names = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9"),
+caption = paste("Variance decomposition among variables from ",
+"\n PCA based in covariance matrix"))
+```
+
+Regarding __percentage criteria__ the number of principal components that explain high percetage of total variability of the variables are 3, *cum.var > 80%*. In our case 80.05%.    
+
+Regarding __mean criteria__, we will get the number of components that their variance is higher than the mean of the total variance, $\bar{\lambda}$. In this case it will be considered 3 components, as the average of the total variance of the data is `r round(mean(comp.var), 2)`.  
+
+
+#Scree plot  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+#Scree plot
+plot(comp.var, type = "b", xlab = "", ylab = "Represented variance", main = "Scree Plot")
+```
+
+From the scree plot we see a clear L-shaped vertex at 2 components. It can be argued that another L edge appears at 4 components. The edge at 3 components does not seem a stop condition at all using the scree plot usual criteria. In this case, we should probly either stop at 2 PC, if we can afford only covering for up to 68.3% of the total variance, or we should probably stop at 4 PC if our study cannot afford so much misrepresentation. As will be seen in the following sections, the advantadge of taking only two allows is that we can provide highly visual 2D representations of the dataset that will ease its interpretation.    
+
+__3.__ Make a PCA biplot of the previous analysis. You can make use of R's function __biplot__. However, it is usually possible to make nicer plots using the functions __plot__, __points__ and __arrows__. Take care to plot components that have not been standardized. Can you give an interpretation of the first and the second principal component?  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+library(shape)
+plot(PCA[ , 1], PCA[ , 2], xlab = "PC 1", ylab = "PC 2", 
+asp = 1, xlim = c(-7,7), ylim = c(-4, 4), main = "Biplot with covariance matrix", pch=20, cex = 0.5)
+abline(h = 0)
+abline(v = 0)
+# text(PCA[ , 1], PCA[ , 2], 1:nrow(centered.datos), pos = 1)
+Arrows(0,0, 5*eigenvectors[,1], 5*eigenvectors[,2] , col = "blue")
+x_offset <- c(0.8,0.7,0.9,1,1,-0.3,0.9,1,-0)
+y_offset <- c(-0.3,0.3,0,-0.2,0.2,0.2,0.3,0,-0.3)
+text(x=5*eigenvectors[,1] - x_offset, 5*eigenvectors[,2] - y_offset, label=colnames(datos[,1:9]), col = "red", cex = 0.75)
+```
+
+The biplot above represents the data taking account the two first components TODO: ADD LABELS WITH NAMES ON EACH ARROW. In accordance to what we observed in previous sections, the principal components represent the two main differenciated data groups Trunk and Limbs:  
+
++ __PC 1__: Represents the limbs, as the variables which have more weight in it are __Elbow__, __Wirst__, __Knee__ and __Ankle__.
+
++ __PC 2__: Represents the limbs, as the variables which have more weight in it are __Biacr__, __Biili__, __Bitro__ and __ChestDia__.
+
+__4.__  Extract the principal components computed by __princomp__ function by accessing the __scores__ object in the list object produced by __princomp__. Compute the correlations between the extracted principal components. Comment on your results.  
+
+## PCA by __princomp__ command  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+PCA.princomp <- princomp(datos[, 1:9])$scores
+PCA.princomp[1:5,]
+```
+
+## Correlation among the components  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+round(cor(PCA.princomp), 2)[1:5,]
+```
+
+All principal components are uncorrelated, as we were expecting.    
+
+
+__5.__  We now focus on the correlation structure of the variables, and do a second
+principal component analysis using the correlation matrix. Extract the eigenvalues
+and variance decomposition and report these in a Table. How much of the total
+variance is accounted for by two principal components in this analysis?  
+
+```{r echo = FALSE, memessage = FALSE, warning = FALSE}
+cor.matrix <- cor(datos[ , 1:9])
+
+princomps <- princomp(datos[,1:9], cor = TRUE)
+cor.eigenvectors <- eigen(cor.matrix, symmetric = TRUE, only.values = FALSE)$vectors
+
+cor.PCA <- centered.datos[ , 1:9]%*%cor.eigenvectors
+
+# Variances of components
+cor.comp.var <- eigen(cor.matrix, symmetric = TRUE, only.values = FALSE)$values
+cor.perc.var <- (cor.comp.var/sum(cor.comp.var))*100
+cor.cum.var <- (cumsum(cor.comp.var)/sum(cor.comp.var))*100
+cor.tabla.exp.var <- rbind(cor.comp.var, cor.perc.var, cor.cum.var)
+kable(cor.tabla.exp.var, format = "markdown", digits = 2,
+col.names = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9"),
+caption = paste("Variance decomposition among variables from ",
+"\n PCA based in correlation matrix"))
+```
+
+The first two principal components represent only the 63.9% of the variability of the data, slightly lower than on the previous PCA. Using the correlation form of the mean criteria (taking only the eigenvalues greater than 1) would result in taking only 1 component.
+
+As before, if we cannot affor so few variability represented, we should take into account the first 4 components, which represent 80.83% of the variability.  
+
+__6.__  Make a second biplot based on your last PCA and use the standardized principal components in this plot. Add a unit circle to the biplot (you can use function __draw.circle__ from package __plotrix__). Which variable has the poorest goodness-of fit in this plot?  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height= 8}
+library(plotrix)
+cor.PCA.stand <- scale(cor.PCA, center = TRUE, scale = TRUE)
+par(las = 2, pty="s")
+plot(cor.PCA.stand[ , 1], cor.PCA.stand[ , 2], xlim = c(-1.5,1.5), ylim = c(-1.5,1.5), xlab = "PC 1", ylab = "PC 2", 
+asp = 1,  main = "Biplot with correlation matrix", pch = 20, cex = 0.5)
+abline(h = 0)
+abline(v = 0)
+# text(cor.PCA.stand[ , 1], cor.PCA.stand[ , 2], 1:nrow(centered.datos), pos = 1)
+Arrows(0,0, cor.eigenvectors[,1], cor.eigenvectors[,2] , col = "blue")
+draw.circle(0, 0,border = "blue", radius = 1)
+
+x_offset <- 0.2 * c(0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5)
+y_offset <- 0.2 * c(-0.2,0,0,0,-0.2,-0.2,0,0,-0)
+colnames(datos[,1:9])
+text(x=cor.eigenvectors[,1] - x_offset, cor.eigenvectors[,2] - y_offset, label=c("X1","X2","X3","X4","X5","X6","X7","X8","X9"), col = "red", cex = 0.75)
+
+```
+
+The previous biplot represents the data taking into account the two first principal components computed by the correlation matrix. In this case the components represents:  
+
++ __PC 1__: The variables which have more weight are __Elbow__, __Wrist__, __Knee__ . As in the previous case, this component plays the role of representing the shape of body's extremities.  
+
++ __PC 2__: The variables which have more wheigt are __Biacr__, __Biili__, and __ChestDia__. The second component, as in the result obtained by the covariance matrix, is talking about the shape of the body.
+
+## Poorest goodness of fit
+TODO: Poorest goodness of fit.
+```{r}
+apply(as.matrix(cbind(cor.eigenvectors[,1], cor.eigenvectors[,2])), MARGIN = 1, FUN = function(x) { t(x)%*%x })
+```
+
+
+__7.__  Compute the correlation matrix between the original variables and the first two principal components obtained by __princomp__. Which variables correlate highly with which components?  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+A <- round(cor(datos[ , 1:9], cbind(PCA.princomp[, 1], PCA.princomp[, 2])), 2)
+colnames(A) <- c("PC1", "PC2")
+A
+```
+
+The variables which have negative higher correlation with the two principal components are:  
+
++ __PC 1__: All variables, especially __Bitro__, __Biili__ and __Knee__     
+
++ __PC 2__: __ChestDia__ and __Biili__    
+
+
+
+__8.__  Calculate the goodness-of-fit of the correlation matrix as it has been represented in the last biplot.  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+
+```
+
+
+__9.__  Study the relationships between the Age, Weight and Height, and the first two principal components by calculating correlations and making some plots. Do these variables help for interpreting the principal components?  
+
+## Correlation  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+correlation <- cor(datos[, 10:12], cor.PCA[, 1:2])
+colnames(correlation) <- c("PC 1", "PC 2")
+correlation
+```
+
+The variable with higher relation with the first principal component is __Weight__. It has negative correlation, what means the higher the weight of a woman the less the value of PC1. It can be said that __Height__ also affects negatively to PC1, but to a lesser extent.     
+
+Given the second component, PC2, the variable with higher negative relation is __Weight__ too.  
+
+In the next plot it can be observed the relation of the new variables and the two principal components  
+
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 12, fig.height = 8}
+par(mfrow = c(3, 2), font.lab = 2)
+plot(datos[, 10], cor.PCA[, 1], xlab = "Age", ylab = "PC 1", asp = 1, main = "Age vs PC1")
+plot(datos[, 10], cor.PCA[, 2], xlab = "Age", ylab = "PC 2", asp = 1, main = "Age vs PC2")
+plot(datos[, 11], cor.PCA[, 1], xlab = "Weight", ylab = "PC 1", asp = 1, main = "Weight vs PC1")
+plot(datos[, 11], cor.PCA[, 2], xlab = "Weight", ylab = "PC 2", asp = 1, main = "Weight vs PC2")
+plot(datos[, 12], cor.PCA[, 1], xlab = "Height", ylab = "PC 1", asp = 1, main = "Height vs PC1")
+plot(datos[, 12], cor.PCA[, 2], xlab = "Height", ylab = "PC 2", asp = 1, main = "Height vs PC2")
+```
