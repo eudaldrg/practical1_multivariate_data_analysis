@@ -162,7 +162,6 @@ variance is accounted for by two principal components in this analysis?
 ```{r echo = FALSE, memessage = FALSE, warning = FALSE}
 cor.matrix <- cor(datos[ , 1:9])
 
-princomps <- princomp(datos[,1:9], cor = TRUE)
 cor.eigenvectors <- eigen(cor.matrix, symmetric = TRUE, only.values = FALSE)$vectors
 
 cor.PCA <- centered.datos[ , 1:9]%*%cor.eigenvectors
@@ -186,6 +185,7 @@ __6.__  Make a second biplot based on your last PCA and use the standardized pri
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.width = 8, fig.height= 8}
 library(plotrix)
+
 cor.PCA.stand <- scale(cor.PCA, center = TRUE, scale = TRUE)
 par(las = 2, pty="s")
 plot(cor.PCA.stand[ , 1], cor.PCA.stand[ , 2], xlim = c(-1.5,1.5), ylim = c(-1.5,1.5), xlab = "PC 1", ylab = "PC 2", 
@@ -219,7 +219,8 @@ apply(as.matrix(cbind(cor.eigenvectors[,1], cor.eigenvectors[,2])), MARGIN = 1, 
 __7.__  Compute the correlation matrix between the original variables and the first two principal components obtained by __princomp__. Which variables correlate highly with which components?  
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
-A <- round(cor(datos[ , 1:9], cbind(PCA.princomp[, 1], PCA.princomp[, 2])), 2)
+princomps <- princomp(datos[,1:9], cor = TRUE)
+A <- round(cor(datos[ , 1:9], cbind(princomps$scores[, 1], princomps$scores[, 2])), 2)
 colnames(A) <- c("PC1", "PC2")
 A
 ```
