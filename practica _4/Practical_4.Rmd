@@ -1,0 +1,57 @@
+---
+title: "Practical 4"
+author: "Eudald Romo Grau y Laura Santulario Verdú"
+date: "March 15, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+__1.__ Load the contingency table in the R environment.  
+
+```{r}
+mum_child <- read.table("Mother_child.txt", header = TRUE, sep = " ", dec = ".", row.names = 1)
+colnames(mum_child) <- c("<18", "18-25", "25-30)", "[30-35)", "35")
+```
+
+
+__2.__ (2p) Is there association between birth weight and age of the mother? Perform a chisquare test for independence between row and columns. Report the chi-square statistic, degrees of freedom, and p-value.  
+
+##Chisquare test  
+
+```{r}
+chisq.test(mum_child)
+```
+
+Aplaying the independece test to our data: $$H_0: \text{The mother's age and the weight of the child at birth is independent}$$ 
+$$H_1: \text{The mother's age and the weight of the child at birth is dependent}$$
+
+We have obtained a *p-value = 8.046e-10*, what means that the probability of rejecting $H_0$ being true is 8.046e-10 (nearly 0). So considering an $\alpha$ level equal to 0.05 (0.05 >> 8.046e-10) we can reject with enough statistical significance the null hypothesis. So there is dependece between the age of the mum and the weight of the babies.  
+
+
+__3.__ (2p) Compute the correspondence matrix. Which category is the most frequent category? Which the less frequent?  
+
+```{r}
+P <- round((1/sum(mum_child))*mum_child, 3)
+P
+which(P == max(P))
+which(P == min(P))
+```
+
+The most frequent category is that which the mothers are between 18 and 25 years and the babies have born with a weight between 2 and 3 kg.  
+
+On the other hand the less frequent categories are that where the mum is between 18 and 25 years and the baby weight less than 1 kg (what means that is not often that a mum of this age has premature babies) 
+The mums older than 35 years with babies with 1-2 kg.  
+
+__4.__ Compute the expected counts under the assumption of independence. What is the sum of all expected counts?
+
+
+
+
+
+
+
+
