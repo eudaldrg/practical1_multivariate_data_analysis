@@ -83,6 +83,7 @@ The next matrix represents the cell-contribution:
 ```{r echo = TRUE, message = FALSE, warning = FALSE}
 cell.contr <- round(((N - EXPECTED))/sqrt(EXPECTED), 3)
 cell.contr <- as.matrix(cell.contr)
+cell.contr
 ```
 
 For representing these contributions we will use the comand __corrplot__.   
@@ -212,17 +213,18 @@ The principal inertia table shows the decomposition of total inertia of a 6 x 5 
 
 From the __row contributions__ table we get some useful information:  
 
-+ The column __mass__ plays the role, as we have already seen in point __ 7.__, of marginal distribution of *baby's weight at birth*. So from this we can say that, from our sample, the probability that a child with appropriate weight is born is higher that a child born with underweight or overweight (because the higher probabilities are for the categories __"2 - 3Kg"__ (40.4%), __" 3 - 3.5Kg"__ (24.4%) and __" 3.5 - 4Kg"__(19.2%)) 
++ The column __mass__ plays the role, as we have already seen in point 
+__7.__, of marginal distribution of *baby's weight at birth*. So from this we can say that, from our sample, the probability that a child with appropriate weight is born is higher that a child born with underweight or overweight (because the higher probabilities are for the categories __"2 - 3Kg"__ (40.4%), __" 3 - 3.5Kg"__ (24.4%) and __" 3.5 - 4Kg"__(19.2%)) 
 
-+ The column __qlt__ represents how well define is the category by the 2 first components. In our case, the best representation for *baby's weight* categories are for __" 3 - 3.5Kg"__ (99.4%), __"> 4Kg"__ (92.2%) and __"2 - 3Kg"__ (90%), while the poorest is for __" 1 - 2Kg"__ (32.6%).  From this we could say that the heavier the baby at birth the better is the representation by the two first components.
++ The column __qlt__ represents how well define is the category by the 2 first components. In our case, the best representation for *baby's weight* categories are for __"3 - 3.5Kg"__ (99.4%), __"> 4Kg"__ (92.2%) and __"2 - 3Kg"__ (90%), while the poorest is for __"1 - 2Kg"__ (32.6%).  From this we could say that the heavier the baby at birth the better is the representation by the two first components.
 
 + The column __inr__ represents how each category of the variable *baby's weight* contributes to the proportion of the total inertia. The __"> 4Kg"__ category is the one who contributes the most (31.4%) to the computation of the $\chi^2$ statistic,  what means that this category is the one which deviates more from its expected value for the independence (the same as we obtained from point __5.__)  
 
 + The columns __k = 1__ and __k = 2__ represents the principal coordinates for the first two components.    
 
-+ The column __cor__ represents, for each component, the contribution of the component to the row's inertia. The most inertia showed by component 1 is given by the categories __"> 4Kg"__ (88.1%) and __"< 1Kg"__ (75.4%), so it could be said that the most inertia for component 1  is given by babies who born with underweight or overweight. The inercia that component 1 explains about __2 - 3kg__ category very a little (2%). On the other hand, the most inertia showed by component 2 is given by the categories __2 - 3kg__ (89.8%) and __3 - 3.5kg__ (85%), the other categories do not give a representative inertia for component 2.  
++ The column __cor__ represents, for each component, the contribution of the component to the row's inertia. The most inertia showed by component 1 is given by the categories __"> 4Kg"__ (88.1%) and __"< 1Kg"__ (75.4%), so it could be said that the most inertia for component 1  is given by babies who born with underweight or overweight. The inercia that component 1 explains about __"2 - 3Kg"__ category very a little (2%). On the other hand, the most inertia showed by component 2 is given by the categories __"2 - 3Kg"__ (89.8%) and __"3 - 3.5Kg"__ (85%), the other categories do not give a representative inertia for component 2.  
 
-+ The column __ctr__ represents the contribution of each row category to the inertia of each component (these values let us interpret the components). The categories __"> 4Kg"__ (57.9%) and __"< 1Kg"__ (30.5%) contribute, the most, to the inertia of component 1. Otherwise, the categories __3 - 3.5kg__ (60.4%) and __2 - 3kg__ (31.4%) contribute, the most, to the inertia of the component 2.  
++ The column __ctr__ represents the contribution of each row category to the inertia of each component (these values let us interpret the components). The categories __"> 4Kg"__ (57.9%) and __"< 1Kg"__ (30.5%) contribute, the most, to the inertia of component 1. Otherwise, the categories __"3 - 3.5kg"__ (60.4%) and __"2 - 3kg"__ (31.4%) contribute, the most, to the inertia of the component 2.  
 
 From the __column contributions__ table we get some useful information:  
 
@@ -247,27 +249,27 @@ plot(ca.data, arrow = c(FALSE, TRUE), map = "rowprincipal")
 
 ```
 
-From this row profile biplot we can observe that the categories  __"< 1Kg"__ and __"> 4Kg"__ of the variable *baby's weight at birth* are the further from the origin along the horizontal axis. This means that these two categories are the ones that most influence on the dispersion of the row profile with respect to the average (expected value for independence). Furthermore, the other categories are quite near from the origin (along the horizontal axis) but on opposite side of the origin. From this we can say that first dimension contrasts healthy babies at birth with problematic babies (overweight and under weight).       
+From this row profile biplot we can observe that the categories  __"< 1Kg"__ and __"> 4Kg"__ of the variable *baby's weight at birth* are the further from the origin along the horizontal axis. This means that these two categories are the ones that most influence on the dispersion of the row profile with respect to the average (expected value for independence). Furthermore, the other categories are quite near from the origin (along the horizontal axis) but on opposite side of the origin. From this we can say that first dimension contrasts healthy babies at birth with problematic babies (overweight and underweight).       
 
 
 __11.__ Which age category has the poorest quality of representation in the map?  
 
-The category __"18 - 25 years"__
-
-
+The category __"< 18"__, because is the closest to the two axes, and from the point __10.__ is the category which has less value for both __qlt__ and __inr__.  
 
 
 __12.__ Which age and weight categories are the main contributors to the first dimension of the solution?   
 
-As we said in the point __10.__ the *baby's weight* categories that are more influencial for the first dimension are __"< 1Kg"__ and __"> 4Kg"__. And the age category that has more contribution to the first component is __"> 35 years"__ (we can conclude this due to the category __"> 35 years"__ of the variable *mother's age at giving birth* is the one which has longer distance to the origin along horizontal axis, and this implies that this category is the category with more contribution on the first dimension)  
+As we said in the point __9.__ the *baby's weight* categories that are more influencial for the first dimension are __"< 1Kg"__ and __"> 4Kg"__. And the age category that has more contribution to the first component is __"> 35 years"__ (we can conclude this due to the category __"> 35 years"__ of the variable *mother's age at giving birth* and the categories __"< 1Kg"__ and __"> 4Kg"__ are those which have longer distance to the origin along horizontal axis, and this implies that thess categories are the categories with more contribution on the first dimension)   
 
-
-
-__13.__ Try the scaling option map = "rowgreen". What changes in the biplot? Does it affect your interpretations?  
+__13.__ Try the scaling option *map = "rowgreen"*. What changes in the biplot? Does it affect your interpretations?  
 
 ```{r echo = TRUE, message = FALSE, warning = FALSE}
 plot(ca.data, arrow = c(FALSE, TRUE), map = "rowgreen")
 ```
+
+Modifying the parameter *map* in the biplot by "rowgreen" let us identify more easily the most contributing points. As we can see the interpretation is the same as in __12.__, because the categories  __"< 1Kg"__ , __"> 4Kg"__ and __"> 35 years"__ are the furthest to the origin along the horizontal axis.  
+
+
 
 
 
