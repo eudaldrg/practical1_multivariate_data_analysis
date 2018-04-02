@@ -2,13 +2,20 @@
 title: "R Notebook"
 output: pdf_document
 ---
+
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ## __1.__ Import the data file Cereals.dat in the R environment.
 ```{r}
 cereal_data <- as.data.frame(read.table("Cereals.dat", header = TRUE))
+head(cereal_data, 5)
 ```
 
 ## __2.__ Compute the Euclidean distance matrix for the cereals, using the information on calories and all seven cereal components, and standardizing the variables prior to the calculation of the distance matrix. You can use the R functions scale and dist for this purpose. Paste the distance matrix of the first 5 specimens into your report.
-```{r}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 numerical_values <- cereal_data[,3:ncol(cereal_data)]
 sd_numerical <- scale(numerical_values)
 eucl_dist <- as.matrix(dist(sd_numerical, upper = T))
@@ -18,13 +25,13 @@ eucl_dist[1:5,1:5]
 ```
 
 ## __3.__ Perform a metric MDS of the data, using the cmdscale program. Plot the two-dimensional solution, and label the cereals with a number or abbreviated name. Use a different colour or symbol to label each cereal according to its manufacturer.
-```{r}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 ## 2D approx
 multidim_scale <- cmdscale(eucl_dist, k = 2, eig = T, x.ret = T)
 # multidim_scale$eig
-multidim_scale$points
 multidim_scale_points_G <- multidim_scale$points[cereal_data$Manufacturer == "G",]
-plot(multidim_scale_points_G[,1], multidim_scale_points_G[,2], xlab = "PC1", ylab = "PC2", pch = 20, xlim = c(min(multidim_scale$points[,1]), max(multidim_scale$points[,1])), ylim = c(min(multidim_scale$points[,2]) - 0.3, max(multidim_scale$points[,2])), cex = 0.75)
+par(pty = "s")
+plot(multidim_scale_points_G[,1], multidim_scale_points_G[,2], xlab = "D1", ylab = "D2", pch = 20, xlim = c(min(multidim_scale$points[,1]), max(multidim_scale$points[,1])), ylim = c(min(multidim_scale$points[,2]) - 0.3, max(multidim_scale$points[,2])), cex = 0.75, asp = 1)
 multidim_scale_points_K <- multidim_scale$points[cereal_data$Manufacturer == "K",]
 points(multidim_scale_points_K[,1], multidim_scale_points_K[,2], pch = 3, cex = 0.75)
 multidim_scale_points_Q <- multidim_scale$points[cereal_data$Manufacturer == "Q",]
@@ -33,108 +40,123 @@ text(x = multidim_scale$points[,1], y = multidim_scale$points[,2], labels = seq(
 legend("bottomright", c("General Mills", "Kellogs", "Quaker"), pch = c(20, 3, 4))
 ```
 
+
+The cereal brands are labeled 1 to 43 as they appear in the matrix of data.
+
 ##__4.__ Which pair of cereals is, according to the two-dimensional solution of the analysis, the most similar?
 ```{r}
 approx_dist <- as.matrix(dist(multidim_scale$points, upper = T)) 
 approx_dist_non_matrix <- dist(multidim_scale$points)
 which(approx_dist == min(approx_dist_non_matrix), arr.ind = T)
-cereal_data$Manufacturer[[14]]
-cereal_data$Manufacturer[[16]]
+cheaties_manufacturer <- cereal_data$Manufacturer[[14]]
+total_whole_grain_manufacturer <- cereal_data$Manufacturer[[16]]
+cheaties_manufacturer
+total_whole_grain_manufacturer
 ```
+The most similar pair is __Cheaties__ and __TotalWholeGrain__. It is worth noting that both are from the same manufacturer, __General Mills__. Just by looking at the MDS plot it can be seen that most of the manufacturers tend to cover a wide variety of the cereal spectrum, probably in order to appeal to a wider range of the population. It's interesting to notice that __General Mills__ follows a pattern of cereals characterized by dispersed clusters of two closely related cereal brands. It's not true for all of them, but a majority of them form a cluster with a clearly distinguished neighbor. In some cases, like __Cheaties__ and __TotalWholeGrain__ it seems it's due to a regular brand and a __dietetic__ brand. It's not followed in all the close neighbor cases, so we cannot affirm certainly that this is the main motive for their existance.
+
 ## __5.__ Which pair of cereals would you, according to the two-dimensional solution of the analysis, classify as most distinct?
 ```{r}
 which(approx_dist == max(approx_dist), arr.ind = T)
 
-cereal_data$Manufacturer[[41]]
-cereal_data$Manufacturer[[18]]
+puffed_rice_manufacturer <- cereal_data$Manufacturer[[41]]
+all_bran_manufacturer <- cereal_data$Manufacturer[[18]]
+puffed_rice_manufacturer
+all_bran_manufacturer
 ```
+The most distinct pair of cereals is __PuffedRice__ and __AllBran__, manufactured by __Quakers__ and __Kellogs__ respectively. It seems reasonable that the highest differences are between different manufacturers, as it is more likely that they use different source materials and have different scopes and strategies to develop their brands.
 
 ## __6.__ Is it possible to find a configuration of the 43 cereals in k dimensions that will represent the original distance matrix exactly? Why or why not? If so, how many dimensions would be needed to obtain this exact representation?
-```{r}
-## K dimension matrix
-#Yes, 6
-```
+Yes, as will be seen in the exercise __8.__, the matrix of scalar products is euclidean (semidefinite positive), so it admits exact representation. Furthermore, there are only 8 non-zero eigenvalues, so with 8 dimensions we get a full representation of the data. It makes sense that there are only 8 different dimensions, because there are only 8 different numerical variables that affect the distance. If the distances can be fully represented (the matrix of scalar products is euclidean), it makes sense that the trivial representation in 8D where each variable represents a dimension will be, in fact, a perfect representation.
 
 ## __7.__ Report the eigenvalues of the solution, and calculate the goodness-of-fit of the two-dimensional solution.
-```{r}
-# multidim_scale$GOF # I just use this to check that the computed value matches
-
-B <- t(multidim_scale$x) %*% multidim_scale$x
-B.eigen <- eigen(B)
-sum(B.eigen$values[1:2]) / sum(B.eigen$values)
-
-B <- t(sd_numerical) %*% sd_numerical
-
-B.eigen <- eigen(B)
-
-eigenvalues <- B.eigen$values
-eigenvalues
-GOF <- sum(B.eigen$values[1:2]) / sum(B.eigen$values)
-GOF
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+round(multidim_scale$eig, digits = 5)
+sum(multidim_scale$eig[1:2]) / sum(multidim_scale$eig)
 ```
 
-```{r}
-## Are there 0 Eigen? Why not?
-# No.
-```
+Above are the eigenvalues of the solution and the goodness-of-fit for two diensions. As can be seen the fit is quite poor, only 55%.
+
+## __8.__ Are there any zero eigenvalues? Can you explain these?
+Yes. The actual values obtained are not exactly 0, but when taking up until 5 decimal digits, they are approximated by 0. Furthermore, they are close to $10^{-15}$, which means that they are highly likely 0 eigenvalues with some truncating errors. As said before, this is consistent with the fact that there are only 8 distinct numerical variables.
 
 ## __9.__ Compute the fitted distances according to the two-dimensional MDS solution. Graph fitted and observed distances and assess the goodness of fit by regression. What do you observe? Report the coefficient of determination of this regression.
-```{r}
-## Plot distances and do regression.
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 eucl_dist_no_matrix <- dist(sd_numerical)
 approx_dist_no_matrix <- dist(multidim_scale$points)
 helper_df <- data.frame(cbind(approx_dist_no_matrix, eucl_dist_no_matrix))
 
-plot(helper_df$approx_dist_no_matrix, helper_df$eucl_dist_no_matrix)
-
-linearMod <- lm(approx_dist_no_matrix ~ eucl_dist_no_matrix, data = helper_df)
+plot(helper_df$approx_dist_no_matrix, helper_df$eucl_dist_no_matrix, xlab = "Estimated Distance", ylab = "Real distance", pch = 20)
+linearMod <- lm(eucl_dist_no_matrix ~ approx_dist_no_matrix, data = helper_df)
 summary(linearMod)
+abline(a = linearMod$coefficients[1], b = linearMod$coefficients[2], col = "blue")
+abline(a = 0, b = 1, col = "red")
+legend("bottomright", c("Scatterplot Data", "Regression Line", "Y = X line"), col = c("black", "blue", "red"), lty = c(NA, 1, 1), pch = c(20, NA, NA))
 ```
+The coefficient of dtermination is 0.7609, which is slightly higher than the GOF obtained from exercise __7.__ It can also be seen that the approximation tends to underpredict all the distance values. This underprediction is more severe in smaller distance values than higher ones, as more spread can be observe on the left part of the scatterplot.
 
 ## __10.__ Try now non-metric MDS with the isoMDS program. Plot the two-dimensional solution, labelling the points again with the name or number of the brand, and using different symbols for different manufacturers.
-```{r}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 ## Non-metric
 non_metric <- MASS::isoMDS(eucl_dist)
 
-
-# todo make plot nicer
-non_metric
-plot(non_metric$points)
-
+par(pty="s")
+non_metric_points_G <- non_metric$points[cereal_data$Manufacturer == "G",]
+plot(non_metric_points_G[,1], non_metric_points_G[,2], xlab = "D1", ylab = "D2", pch = 20, xlim = c(min(non_metric$points[,1]), max(non_metric$points[,1])), ylim = c(min(multidim_scale$points[,2]) - 0.3, max(non_metric$points[,2])), cex = 0.75, asp = 1)
+non_metric_points_K <- non_metric$points[cereal_data$Manufacturer == "K",]
+points(non_metric_points_K[,1], non_metric_points_K[,2], pch = 3, cex = 0.75)
+non_metric_points_Q <- non_metric$points[cereal_data$Manufacturer == "Q",]
+points(non_metric_points_Q[,1], non_metric_points_Q[,2], pch = 4, cex = 0.75)
+text(x = non_metric$points[,1], y = non_metric$points[,2], labels = seq(from = 1, to = nrow(cereal_data)), pos = 1, cex = 0.5)
+legend("bottomright", c("General Mills", "Kellogs", "Quaker"), pch = c(20, 3, 4))
 ```
 
 ## __11.__ Which pair of cereals is, according to the two-dimensional solution of the non-metric analysis, most similar?
 
-```{r}
-## Check two closest
-approx_dist_non_metric <- dist(non_metric$points)
-helper_df_non_metric <- data.frame(cbind(approx_dist_non_metric, eucl_dist_no_matrix))
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+approx_dist_non_metric <- as.matrix(dist(non_metric$points, upper = T)) 
+approx_dist_non_metric_non_matrix <- dist(non_metric$points)
+which(approx_dist_non_metric == min(approx_dist_non_metric_non_matrix), arr.ind = T)
+count_chocula_manufacturer <- cereal_data$Manufacturer[[14]]
+cocoa_puffs_manufacturer <- cereal_data$Manufacturer[[16]]
 ```
+
+In this case, the closest products are __CountChocula__ and __CocoaPuffs__, both from __General Mills__ We would expect this result to correspond with the one obtained in the metric MDS. Non-metric MDS distances are not reliable absolute values by themselves, but they preserve the rank between distances. This discrepance is probably due to the bad representation of the metric MDS, specially in lower distance values (as seen in exercise __9.__). Again the two closest values are from __General Mills__ and follow the pair cluster pattern.
 
 ## __12.__ Compute the fitted distances according to the two-dimensional non-metric MDS solution. Graph fitted and observed distances and assess the goodness of fit by regression. What do you observe? Report the coefficient of determination of this regression.
-```{r}
-## Regression
-plot(helper_df_non_metric$approx_dist_non_metric, helper_df_non_metric$eucl_dist_no_matrix)
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+plot(approx_dist_non_metric_non_matrix, eucl_dist_no_matrix, xlab = "Estimated Distance", ylab = "Real distance", pch = 20)
 
-linearMod_non_metric <- lm(approx_dist_non_metric ~ eucl_dist_no_matrix, data = helper_df)
+linearMod_non_metric <- lm(eucl_dist_no_matrix~approx_dist_non_metric_non_matrix)
 summary(linearMod_non_metric)
+abline(a = linearMod_non_metric$coefficients[1], b = linearMod_non_metric$coefficients[2], col = "blue")
+abline(a = 0, b = 1, col = "red")
+legend("bottomright", c("Scatterplot Data", "Regression Line", "Y = X line"), col = c("black", "blue", "red"), lty = c(NA, 1, 1), pch = c(20, NA, NA))
 ```
+The coefficient of determination is 0.8579, which is, surprisingly, higher than the one in metrid MDS. The lower distance values tend to be underpredicted, while the higher values tend to be overpredicted.
 
 ## __13.__ Compute the stress for a 1, 2, 3, 4 and 5 dimensional solution. How many dimensions do you think are necessary to obtain a ”good fit”?
-```{r}
-
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+dimension_1 <- MASS::isoMDS(eucl_dist, k = 1)
+dimension_2 <- MASS::isoMDS(eucl_dist, k = 2)
+dimension_3 <- MASS::isoMDS(eucl_dist, k = 3)
+dimension_4 <- MASS::isoMDS(eucl_dist, k = 4)
+dimension_5 <- MASS::isoMDS(eucl_dist, k = 5)
 ```
 
+Above are the results of running non-metric MDS until convergence for 1, 2, 3, 4, and 5 dimensions. We usually consider good fit under 5% stress, so we need 4 dimensions to obtain a good fit.
+
 ## __14.__ Make a scatterplot matrix of the first two dimensions of the metric MDS solution and the non-metric MDS solution (use k = 2). Calculate the correlation matrix of these four variables and comment on your results.
-```{r}
+```{r echo = FALSE, message = FALSE, warning = FALSE}
 helper_scatter <- data.frame(cbind(multidim_scale$points, non_metric$points))
 colnames(helper_scatter) <- c("MetricDim1","MetricDim2","NonMetricDim1","NonMetricDim2")
 plot(helper_scatter)
 round(cor(helper_scatter), digits = 3)
-
 ```
+
+It can be seen that the first dimension of the Metric MDS highly corresponds to the first dimension of the non-metric MDS, and the same behavior is seen between the second dimensions of both analysis. Furthermore there's almost complete correlation between the first dimensions, so it can be inferred that most of the improvement of the non-metric analysis with respect to the metric one is due to a better approximation/choice of the second dimension.
 
 ## __15.__ We have used the Euclidean distance as a metric in this exercise, on the standardized variables. We could also have calculated the Euclidean distance matrix without prior standardization of the variables. Which approach do you think is preferable? Argue your answer.
-```{r}
-## Why sd?
-```
+The different numerical variables don't have comparable units. Variables as __Calories__ and __Sodium__ have values orders of magnitude higher than __Protein__ or __Fat__, and have higher standard deviations too. This means that most of the contribution to the distance would come from these bigger variables. Thus smaller variables would probably be more misrepresented than bigger ones.
+
+So, it's probably preferable to standardize the variables prior to the analysis.
