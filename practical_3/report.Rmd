@@ -1,0 +1,140 @@
+---
+title: "R Notebook"
+output: pdf_document
+---
+## __1.__ Import the data file Cereals.dat in the R environment.
+```{r}
+cereal_data <- as.data.frame(read.table("Cereals.dat", header = TRUE))
+```
+
+## __2.__ Compute the Euclidean distance matrix for the cereals, using the information on calories and all seven cereal components, and standardizing the variables prior to the calculation of the distance matrix. You can use the R functions scale and dist for this purpose. Paste the distance matrix of the first 5 specimens into your report.
+```{r}
+numerical_values <- cereal_data[,3:ncol(cereal_data)]
+sd_numerical <- scale(numerical_values)
+eucl_dist <- as.matrix(dist(sd_numerical, upper = T))
+colnames(eucl_dist) <- cereal_data$Brand
+rownames(eucl_dist) <- cereal_data$Brand
+eucl_dist[1:5,1:5]
+```
+
+## __3.__ Perform a metric MDS of the data, using the cmdscale program. Plot the two-dimensional solution, and label the cereals with a number or abbreviated name. Use a different colour or symbol to label each cereal according to its manufacturer.
+```{r}
+## 2D approx
+multidim_scale <- cmdscale(eucl_dist, k = 2, eig = T, x.ret = T)
+# multidim_scale$eig
+multidim_scale$points
+multidim_scale_points_G <- multidim_scale$points[cereal_data$Manufacturer == "G",]
+plot(multidim_scale_points_G[,1], multidim_scale_points_G[,2], xlab = "PC1", ylab = "PC2", pch = 20, xlim = c(min(multidim_scale$points[,1]), max(multidim_scale$points[,1])), ylim = c(min(multidim_scale$points[,2]) - 0.3, max(multidim_scale$points[,2])), cex = 0.75)
+multidim_scale_points_K <- multidim_scale$points[cereal_data$Manufacturer == "K",]
+points(multidim_scale_points_K[,1], multidim_scale_points_K[,2], pch = 3, cex = 0.75)
+multidim_scale_points_Q <- multidim_scale$points[cereal_data$Manufacturer == "Q",]
+points(multidim_scale_points_Q[,1], multidim_scale_points_Q[,2], pch = 4, cex = 0.75)
+text(x = multidim_scale$points[,1], y = multidim_scale$points[,2], labels = seq(from = 1, to = nrow(cereal_data)), pos = 1, cex = 0.5)
+legend("bottomright", c("General Mills", "Kellogs", "Quaker"), pch = c(20, 3, 4))
+```
+
+##__4.__ Which pair of cereals is, according to the two-dimensional solution of the analysis, the most similar?
+```{r}
+approx_dist <- as.matrix(dist(multidim_scale$points, upper = T)) 
+approx_dist_non_matrix <- dist(multidim_scale$points)
+which(approx_dist == min(approx_dist_non_matrix), arr.ind = T)
+cereal_data$Manufacturer[[14]]
+cereal_data$Manufacturer[[16]]
+```
+## __5.__ Which pair of cereals would you, according to the two-dimensional solution of the analysis, classify as most distinct?
+```{r}
+which(approx_dist == max(approx_dist), arr.ind = T)
+
+cereal_data$Manufacturer[[41]]
+cereal_data$Manufacturer[[18]]
+```
+
+## __6.__ Is it possible to find a configuration of the 43 cereals in k dimensions that will represent the original distance matrix exactly? Why or why not? If so, how many dimensions would be needed to obtain this exact representation?
+```{r}
+## K dimension matrix
+#Yes, 6
+```
+
+## __7.__ Report the eigenvalues of the solution, and calculate the goodness-of-fit of the two-dimensional solution.
+```{r}
+# multidim_scale$GOF # I just use this to check that the computed value matches
+
+B <- t(multidim_scale$x) %*% multidim_scale$x
+B.eigen <- eigen(B)
+sum(B.eigen$values[1:2]) / sum(B.eigen$values)
+
+B <- t(sd_numerical) %*% sd_numerical
+
+B.eigen <- eigen(B)
+
+eigenvalues <- B.eigen$values
+eigenvalues
+GOF <- sum(B.eigen$values[1:2]) / sum(B.eigen$values)
+GOF
+```
+
+```{r}
+## Are there 0 Eigen? Why not?
+# No.
+```
+
+## __9.__ Compute the fitted distances according to the two-dimensional MDS solution. Graph fitted and observed distances and assess the goodness of fit by regression. What do you observe? Report the coefficient of determination of this regression.
+```{r}
+## Plot distances and do regression.
+eucl_dist_no_matrix <- dist(sd_numerical)
+approx_dist_no_matrix <- dist(multidim_scale$points)
+helper_df <- data.frame(cbind(approx_dist_no_matrix, eucl_dist_no_matrix))
+
+plot(helper_df$approx_dist_no_matrix, helper_df$eucl_dist_no_matrix)
+
+linearMod <- lm(approx_dist_no_matrix ~ eucl_dist_no_matrix, data = helper_df)
+summary(linearMod)
+```
+
+## __10.__ Try now non-metric MDS with the isoMDS program. Plot the two-dimensional solution, labelling the points again with the name or number of the brand, and using different symbols for different manufacturers.
+```{r}
+## Non-metric
+non_metric <- MASS::isoMDS(eucl_dist)
+
+
+# todo make plot nicer
+non_metric
+plot(non_metric$points)
+
+```
+
+## __11.__ Which pair of cereals is, according to the two-dimensional solution of the non-metric analysis, most similar?
+
+```{r}
+## Check two closest
+approx_dist_non_metric <- dist(non_metric$points)
+helper_df_non_metric <- data.frame(cbind(approx_dist_non_metric, eucl_dist_no_matrix))
+```
+
+## __12.__ Compute the fitted distances according to the two-dimensional non-metric MDS solution. Graph fitted and observed distances and assess the goodness of fit by regression. What do you observe? Report the coefficient of determination of this regression.
+```{r}
+## Regression
+plot(helper_df_non_metric$approx_dist_non_metric, helper_df_non_metric$eucl_dist_no_matrix)
+
+linearMod_non_metric <- lm(approx_dist_non_metric ~ eucl_dist_no_matrix, data = helper_df)
+summary(linearMod_non_metric)
+```
+
+## __13.__ Compute the stress for a 1, 2, 3, 4 and 5 dimensional solution. How many dimensions do you think are necessary to obtain a ”good fit”?
+```{r}
+
+```
+
+## __14.__ Make a scatterplot matrix of the first two dimensions of the metric MDS solution and the non-metric MDS solution (use k = 2). Calculate the correlation matrix of these four variables and comment on your results.
+```{r}
+helper_scatter <- data.frame(cbind(multidim_scale$points, non_metric$points))
+colnames(helper_scatter) <- c("MetricDim1","MetricDim2","NonMetricDim1","NonMetricDim2")
+plot(helper_scatter)
+round(cor(helper_scatter), digits = 3)
+
+```
+
+## __15.__ We have used the Euclidean distance as a metric in this exercise, on the standardized variables. We could also have calculated the Euclidean distance matrix without prior standardization of the variables. Which approach do you think is preferable? Argue your answer.
+```{r}
+## Why sd?
+```

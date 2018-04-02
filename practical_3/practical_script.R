@@ -46,3 +46,30 @@ linearMod <- lm(approx_dist_no_matrix ~ eucl_dist_no_matrix, data = helper_df)
 summary(linearMod)
 
 ## Non-metric
+non_metric <- MASS::isoMDS(eucl_dist)
+
+
+# todo make plot nicer
+non_metric
+plot(non_metric$points)
+
+## Check two closest
+approx_dist_non_metric <- dist(non_metric$points)
+helper_df_non_metric <- data.frame(cbind(approx_dist_non_metric, eucl_dist_no_matrix))
+
+## Regression
+plot(helper_df_non_metric$approx_dist_non_metric, helper_df_non_metric$eucl_dist_no_matrix)
+
+linearMod_non_metric <- lm(approx_dist_non_metric ~ eucl_dist_no_matrix, data = helper_df)
+summary(linearMod_non_metric)
+
+## Stress
+
+## Scatterplot
+
+helper_scatter <- data.frame(cbind(multidim_scale$points, non_metric$points))
+colnames(helper_scatter) <- c("MetricDim1","MetricDim2","NonMetricDim1","NonMetricDim2")
+plot(helper_scatter)
+round(cor(helper_scatter), digits = 3)
+
+## Why sd?
