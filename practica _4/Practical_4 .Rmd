@@ -1,0 +1,277 @@
+---
+title: "Practical 4"
+author: "Eudald Romo Grau y Laura Santulario Verdú"
+date: "March 15, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+__1.__ Load the contingency table in the R environment.  
+
+## Contingency table  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+setwd("C:\\Users\\TOSHIBA\\Documents\\GitHub\\practical1_multivariate_data_analysis\\practica _4")
+N <- read.table("Mother_child.txt", header = TRUE, sep = " ", dec = ".", row.names = 1)
+colnames(N) <- c("<18", "18-25", "25-30)", "[30-35)", ">35")
+N
+```
+
+
+__2.__ (2p) Is there association between birth weight and age of the mother? Perform a chisquare test for independence between row and columns. Report the chi-square statistic, degrees of freedom, and p-value.  
+
+##Chisquare test  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+chi <- chisq.test(N)
+chi
+```
+
+Applaying the independece test to our data: $$H_0: \text{The mother's age and the weight of the child at birth are independent}$$ $$H_1: \text{The mother's age and the weight of the child at birth are dependent}$$
+
+We have obtained a *p-value = 8.046e-10*, what means that the probability of rejecting $H_0$ being true is *8.046e-10* (nearly 0). So taking into account an $\alpha$ level equal to 0.05 (0.05 >> 8.046e-10) we can reject with enough statistical significance the null hypothesis. So there is some grade of association between the *age of the mum* and the *weight of the babies*.
+
+In this case, the statistic that has been obtained is `r round(chi$statistic, 3)[[1]]` and comes from a distribution $\chi^2$ with `r chi$parameter[[1]]` degrees of freedom. The df is the result of $(rownumber - 1)\times(colnumber - 1)$, in our specific case `r dim(N)[1] - 1` $\times$ `r dim(N)[2] - 1` = `r (dim(N)[1]-1) * (dim(N)[2]-1)`
+
+__3.__ (2p) Compute the correspondence matrix. Which category is the most frequent category? Which the less frequent? 
+
+## Correspondance matrix  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+P <- round((1/sum(N))*N, 3)
+P
+P <- as.matrix(P)
+P.most.freq <- which(P == max(P), arr.ind = TRUE)
+P.less.freq <- which(P == min(P), arr.ind = TRUE)
+```
+
+The correspondence matrix is a probability matrix which displays the probabilities of all possible combinations of categories between the variables *woman's age* and *baby's weight* of the sample. From this matrix we can obtain the most and the less frequent categories. In our case the most frequent is that which the mothers are between 18 and 25 years and the babies have born with a weight between 2 and 3 kg (with a probability of `r P[P.most.freq[[1]],P.most.freq[[2]]]`). On the other hand, the less frequent categories, both with probability 0, are those where the mothers are between 18 and 25 years and have given birth babies with a weight less than 1 kg. The other category with probability 0 is that which corresponds with the mothers  older than 35 years which babies have born with a weight between 1 and 2 kg.  
+
+__4.__ Compute the expected counts under the assumption of independence. What is the sum of all expected counts?  
+
+## Expected counts matrix   
+
+Expected matrix represents the frequency that would be expected in a cell if the variables were independent.  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+EXPECTED <- chi$expected
+round(EXPECTED, 3)
+```
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+sum.exp <- sum(EXPECTED)
+```
+
+When the expected matrix is computed the number of observations does not change, but only the distribution of the observations with the objective to ensure that the categories of the variable baby's weight are independent to the categories of the mother's age. So, as we were expecting, we have gotten `r sum.exp` expected counts, the same as observed ones.  
+
+Comparing contingency table to the expected matrix it can be noticed that the higher difference for *baby's weight* is found in those who born with a weight between 2 and 3.5 Kg from women with ages between 18 and 35 years. And these cases are corresponded with the most commom context of developed countries (healthy babies born with a weight between 2.5 and 4 Kg and, usually, women plan to have descendents when they are around 20-35 years)   
+
+
+__5.__ Compute for each cell of the contingency table its contribution to the chi-square statistic. Which cell(s) do contribute most to the chi-square statistic?  
+
+## Cells - contribution matrix 
+
+The chi-square statistic is the sum of the contributions from each of the individual cells. These cell - contributions are given by the following formula:   
+$$\frac{(observed_{i,j} - expected_{i,j})}{\sqrt{expected_{i,j}}}$$  
+
+The next matrix represents the cell-contribution:  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+cell.contr <- round(((N - EXPECTED))/sqrt(EXPECTED), 3)
+cell.contr <- as.matrix(cell.contr)
+```
+
+For representing these contributions we will use the comand __corrplot__.   
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+which(cell.contr == max(cell.contr), arr.ind = TRUE)
+library(corrplot)
+corrplot(cell.contr, is.cor = FALSE)
+```
+
+From this plot it can be said that the higher contributions are given by:  
+
++ Mothers who are older than 35 and have given birth babies heavier than 4 Kg. This is positive association, what means that for women elder than 35 years is more commom having overweight babies (it could be related with gestational diabetes, because being elder than 35 years is a risk factor for this kind of diabetes)  
+
++ Mothers between 25 and 30 years with babies that weigh between 3 and 3.5 Kg. In this case there is no association, what implies that is not common that women between 25 and 30 years have babies of 3 - 3.5 Kg (this could be related with the fact that women begin to be less fertile from 25 years and also because, usually, at these ages women are not completely compromise to change the way of life to another healthier)
+
++ In a lesser extend mothers elder than 35 years that have delivered babies under weight or premature (less than 1 Kg). This association is positive, as in the first point, but in this case in a fewer grade (this could happend because from 35 years on the risk of having premature babies is higher)  
+
+
+__6.__ Compute the row profies of the table. Compute also the weighted average of the row profiles, using the row masses as weights. Are the profiles homogeneous?  
+
+## Row profiles  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+#Create a function that computes profiles and masses:
+profile.func <- function(M, x){
+  if (x == 1) {
+    rows <- nrow(M)
+    prof <- NULL
+    mass <- rowSums(M)
+    for (i in 1:rows) {
+      prof <- rbind(prof, M[i,]/sum(M[i,]))
+    }
+  } else {
+      cols <- ncol(M)
+      prof <- NULL
+      mass <- colSums(M)
+      for (i in 1:cols) {
+      prof <- cbind(prof, M[, i]/sum(M[, i]))
+    }
+  }
+  
+  solution <- list("prof" = round(prof, 3), "mass" = round(mass, 3))
+  return(solution)
+}
+
+profile.func(P, 1)$prof
+```
+
+The matrix above expresses conditioned probabilities on the categories of the variable *baby's weight at birth* (we can realize that the sum of each row is 1). For instance, of the babies with 3 - 3.5 Kg at birth, most are children of women who are 18-25 years (59.4%), and the fewest were delivered by women older than 35  years (2.6%). The others are splitted in 8.6% are children of women with ages between 25-30, 10.7% belong to women younger than 18 and the spare children, 19.3% to women of 30-35 years.      
+
+## Weighted average of the row profiles    
+
+In our case, the weighted average row profile represents the marginal distribution of the variable *mother's age at giving birth*. In this case, women between 18 and 25 years are the most likely to become pregnant (49.2%), while the women older than 35 the least common (3.3%).   
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+row.average.prof <- round(as.vector(profile.func(P, 1)$mass)%*%profile.func(P, 1)$prof, 3)
+row.average.prof
+```
+
+As we can check, weighted average row profile is the same as column masses.   
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+profile.func(P, 2)$mass
+```
+
+From this, it can be said that our row profiles are not homogeneous, because if they were, the conditional probabilities, to the categories of *baby's weight*, would have the same distribution as the marginal distribution of *mother's age at giving birth*.  
+
+__7.__ Compute the column profiles of the table. Compute also the weighted average of the column profiles, using the column masses as weights. Are the profiles homogeneous?  
+
+## Column profiles  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+profile.func(P, 2)$prof
+```
+
+The matrix above expresses conditioned probabilities on the categories of the variable *mother's age at giving birth* (we can realize that the sum of each column is 1)  
+
+## Weighted average of the column profiles  
+
+In this study, the weighted average column profile represents the marginal distribution of the variable *baby's weight at birth*. In this case, the most common is having babies that weigh between 3 and 3.5 Kg (24.4%), while the most unusual is finding babies that born with less than 1 Kg (1.6%). These results make us think that this sample has been taken from a population of a developed country.    
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+col.average.prof <- round(as.vector(profile.func(P, 2)$mass)%*%t(profile.func(P, 2)$prof), 3)
+col.average.prof
+```
+
+As we can check, weighted average column profile is the same as row masses.    
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+profile.func(P, 1)$mass
+```
+
+From this, it can be said that our column profiles are not homogeneous, because if they were, the conditional probabilities, to the categories of *mother's age at giving birth*, would have the same distribution as the marginal distribution of *baby's weight at birth*.
+
+
+__8.__ Compute the total intertia of the table.  
+
+## Total inertia  
+
+Total inertia measures profile's dispersion with respect to the average (expected values for independence). The total inertia can be computed as: $$\frac{\chi^2}{n}$$ 
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+tot.inercia <- round(chi$statistic/sum(N), 3)
+```
+
+In this study, total inertia is `r tot.inercia[[1]]`. As this value is not equal to 0 we cannot say that the two variables (*mother's age* and *baby's weight*) are independent, but it is true that the value of inertia is little (maximum inertia would be gotten at  4, $min(rownumber - 1, colnumber - 1)$) so we can deem that the association between these two categorical variables is weak, and, as we checked in the point __5.__, it is, mainly, induced by the babies from mothers older than 35 years (due to the condition of being older than 35 is a risk factor for the pregnancy and may cause problems like gestational diabetes or giving birth before due date)      
+
+
+__9.__ Install the package ca. Perform correspondence analysis of the contingency table with the function ca. Use summary to obtain the numerical output of the corresponence analysis. How many dimensions does the solution of a correspondence analysis of this table have? How many dimensions are needed to obtain a good approximation to this table?  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+library(ca)
+ca.data <- ca(N)
+summary(ca.data)
+```
+
+As we can see above, the command *summary(ca.data)* returns 3 tables:  
+
++ Principal inertias  
+
++ Row contributions  
+
++ Column contributions  
+
+The principal inertia table shows the decomposition of total inertia of a 6 x 5 contingency table into 4 components (axes). The total inertia explained by the four components is 0.145 (the same that has been computed in the previous point __8.__). Of the total inertia, the first component accounts for 47.7% of the inertia and the second  component accounts for 37.4% of the inertia, so cumulative percentage of inertia of these two components account for 85% of the total inertia. Therefore, specifying 2 components for the analysis may be enough.  
+
+From the __row contributions__ table we get some useful information:  
+
++ The column __mass__ plays the role, as we have already seen in point __ 7.__, of marginal distribution of *baby's weight at birth*. So from this we can say that, from our sample, the probability that a child with appropriate weight is born is higher that a child born with underweight or overweight (because the higher probabilities are for the categories __"2 - 3Kg"__ (40.4%), __" 3 - 3.5Kg"__ (24.4%) and __" 3.5 - 4Kg"__(19.2%)) 
+
++ The column __qlt__ represents how well define is the category by the 2 first components. In our case, the best representation for *baby's weight* categories are for __" 3 - 3.5Kg"__ (99.4%), __"> 4Kg"__ (92.2%) and __"2 - 3Kg"__ (90%), while the poorest is for __" 1 - 2Kg"__ (32.6%).  From this we could say that the heavier the baby at birth the better is the representation by the two first components.
+
++ The column __inr__ represents how each category of the variable *baby's weight* contributes to the proportion of the total inertia. The __"> 4Kg"__ category is the one who contributes the most (31.4%) to the computation of the $\chi^2$ statistic,  what means that this category is the one which deviates more from its expected value for the independence (the same as we obtained from point __5.__)  
+
++ The columns __k = 1__ and __k = 2__ represents the principal coordinates for the first two components.    
+
++ The column __cor__ represents, for each component, the contribution of the component to the row's inertia. The most inertia showed by component 1 is given by the categories __"> 4Kg"__ (88.1%) and __"< 1Kg"__ (75.4%), so it could be said that the most inertia for component 1  is given by babies who born with underweight or overweight. The inercia that component 1 explains about __2 - 3kg__ category very a little (2%). On the other hand, the most inertia showed by component 2 is given by the categories __2 - 3kg__ (89.8%) and __3 - 3.5kg__ (85%), the other categories do not give a representative inertia for component 2.  
+
++ The column __ctr__ represents the contribution of each row category to the inertia of each component (these values let us interpret the components). The categories __"> 4Kg"__ (57.9%) and __"< 1Kg"__ (30.5%) contribute, the most, to the inertia of component 1. Otherwise, the categories __3 - 3.5kg__ (60.4%) and __2 - 3kg__ (31.4%) contribute, the most, to the inertia of the component 2.  
+
+From the __column contributions__ table we get some useful information:  
+
++ The column __mass__ plays the role, as we have already seen in point __6.__, of marginal distribution of *mother's age at giving birth*. So from this we can say that, from our sample, the highest probability for a woman of getting pregnant is at the range of ages 18-25, with probability 0.492. And the lowest is for women older than 35 years (0.035).      
+
++ The column __qlt__ represents how well define is the category by the 2 first components. In our case, the best representation for *mother's age at giving birth* categories are for __"> 35"__ (99%), __"25 - 30"__ (90.9%), while the poorest is for __"< 18"__ (31%).  From this we could say that, except pregnant women younger than 18, all column categories are well represented by the two first components.  
+
++ The column __inr__ represents how each category of the variable *mother's age at giving birth* contributes to the proportion of the total inertia. The __"> 35"__ category is the one who contributes the most (43%) to the computation of the $\chi^2$ statistic,  what means that this category is the one which deviates more from its expected value for the independence (the same as we obtained from point __5.__)  
+
++ The columns __k = 1__ and __k = 2__ represents the principal coordinates for the first two components.    
+
++ The column __cor__ represents, for each component, the contribution of the component to the column's inertia. The most inertia showed by component 1 is given by the category __"> 35"__ (95.6%), so it could be said that the most inertia for component 1  is given by women who get pregnant after 35 years. The component 1 does not explain any inercia of the column category __"< 18"__ and only a little of the category __"30 - 35"__ (1%). On the other hand, the most inertia showed by component 2 is given by the categories __"25 - 30"__ (87.1%) and __"30 - 35"__ (74.1%).    
+
++ The column __ctr__ represents the contribution of each column category to the inertia of each component (these values let us interpret the components). The only category which has a representative contribution to the inertia of the component 1 is __"> 35"__ (86.2%). Otherwise, the categories __"25 - 30"__ (49.7%) and __"30 - 35"__ (29.8%) contribute, the most, to the inertia of the component 2.  
+
+__10.__ Make a biplot of the row profiles by using *plot(out, map = "rowprincipal")*, where out contains the results of routine *ca*. Can you interpret the first dimension of the plot?  
+
+## Biplot (row profiles)
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+plot(ca.data, arrow = c(FALSE, TRUE), map = "rowprincipal")
+
+```
+
+From this row profile biplot we can observe that the categories  __"< 1Kg"__ and __"> 4Kg"__ of the variable *baby's weight at birth* are the further from the origin along the horizontal axis. This means that these two categories are the ones that most influence on the dispersion of the row profile with respect to the average (expected value for independence). Furthermore, the other categories are quite near from the origin (along the horizontal axis) but on opposite side of the origin. From this we can say that first dimension contrasts healthy babies at birth with problematic babies (overweight and under weight).       
+
+
+__11.__ Which age category has the poorest quality of representation in the map?  
+
+The category __"18 - 25 years"__
+
+
+
+
+__12.__ Which age and weight categories are the main contributors to the first dimension of the solution?   
+
+As we said in the point __10.__ the *baby's weight* categories that are more influencial for the first dimension are __"< 1Kg"__ and __"> 4Kg"__. And the age category that has more contribution to the first component is __"> 35 years"__ (we can conclude this due to the category __"> 35 years"__ of the variable *mother's age at giving birth* is the one which has longer distance to the origin along horizontal axis, and this implies that this category is the category with more contribution on the first dimension)  
+
+
+
+__13.__ Try the scaling option map = "rowgreen". What changes in the biplot? Does it affect your interpretations?  
+
+```{r echo = TRUE, message = FALSE, warning = FALSE}
+plot(ca.data, arrow = c(FALSE, TRUE), map = "rowgreen")
+```
+
+
+
+
+
+
+
