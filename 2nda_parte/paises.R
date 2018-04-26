@@ -1,8 +1,11 @@
 countries<-read.table("./2nda_parte/Paises.txt",sep="\t",header=TRUE)
 str(countries)
 
+source("Utils.R")
+
 countries2 <- scale(countries[,-1])
-countries.D1 = dist(countries2, method = "euclid")
+
+countries.D1 = mahalanobis.dist(countries2)
 
 #clustering
 require(cluster)
