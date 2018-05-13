@@ -1,0 +1,21 @@
+---
+title: "R Notebook"
+output: pdf_document
+---
+
+```{r}
+getwd()
+countries<-read.table("./ecosystems.txt",sep="\t",header=T)
+# countries<-read.table("./2nda_parte/FANGA_TAUFA_del_tab.txt",sep="\t",header=T)
+str(countries)
+
+countries2 <- scale(countries)
+countries.D1 = dist(countries2, method = "euclid")
+
+#clustering
+require(cluster)
+clusterW<-hclust(countries.D1^2, method="ward.D2")
+
+#Agglomerateive clustering, UPGMA
+plot(clusterW, hang=-1, labels = countries[,1])
+```
