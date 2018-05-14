@@ -57,7 +57,7 @@ result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=5, iter = 1000, criter
 attributes(result.cascadeKM)
 
 result.cascadeKM$partition
-
+result.cascadeKM$results
 require(cluster)
 clusplot(countries2, result.km.2$cluster, main = "Kmeans plot, k = 2", color = TRUE, labels=2)
 

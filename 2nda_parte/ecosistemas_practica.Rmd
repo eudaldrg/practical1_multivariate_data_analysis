@@ -10,6 +10,8 @@ countries<-read.table("./ecosystems.txt",sep="\t",header=T)
 str(countries)
 
 countries2 <- scale(countries)
+
+## Matriz de interdistancias (Parte 1)
 countries.D1 = dist(countries2, method = "euclid")
 
 #clustering
@@ -19,3 +21,57 @@ clusterW<-hclust(countries.D1^2, method="ward.D2")
 #Agglomerateive clustering, UPGMA
 plot(clusterW, hang=-1, labels = countries[,1])
 ```
+
+```{r}
+require(cclust)
+results<-data.frame()
+for(x in c (1,2,3,4,5,6,7,8,9,10)){
+  result.km.x = kmeans(countries2, centers=x, nstart=1000)
+  Silh.km.x<-silhouette(result.km.x$cluster,dist(countries2))
+  results[(x),1]<-x
+  results[(x),2]<-result.km.x$totss
+  results[(x),3]<-result.km.x$tot.withinss
+
+  if (x < 6) {
+    PseudoF.km.x<-clustIndex(result.km.x, countries2, index="calinski")
+    results[(x),4]<-PseudoF.km.x
+  } else {
+    results[x,4] <- NA
+  }
+  
+  if (x == 1) {
+    results[(x),5]<- NA
+    results[(x),6]<- NA
+  } else {
+    Overall.Silh.km.x<-mean(Silh.km.x[,3])
+    results[(x),5]<-Overall.Silh.km.x
+    results[(x),6]<- (results[(x-1),3] - results[(x),3]) / results[(x-1),3]
+  }
+  if (x != 1) plot(Silh.km.x)
+}
+colnames(results)<-c("K","TOTSS","WITHINSS","PseudoF","AvgSilh","DeltaTESS")
+results
+```
+
+One can see clearly (mainly from the silhouettes) that a small number of clusters is not going to give a great classification of the data, but a big number of clusters won't be really robust given the small amount of data that we have. If we need to choose between 2 or 3, probably choose 2, silhouettes seem better (when looked at it on every point) also has better delta tess and slightly better pseudoF. PseudoF crashes for over 6 groups cuz clustIndex programmers are not able to handle single point groups :') block below can do it properly
+
+```{r}
+# Compute K-means for a range of values of K
+require(vegan)
+result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=10, iter = 1000, criterion ="calinski")
+attributes(result.cascadeKM)
+result.cascadeKM$results
+result.cascadeKM$size
+```
+
+```{r}
+result.km.2 <- kmeans(countries2, centers=2, nstart=1000)
+clusplot(countries2, result.km.2$cluster, main = "Kmeans plot, k = 2", color = TRUE, labels=2)
+```
+
+```{r}
+result.km.3 <- kmeans(countries2, centers=3, nstart=1000)
+clusplot(countries2, result.km.3$cluster, main = "Kmeans plot, k = 3", color = TRUE, labels=2)
+```
+
+As before, all seems to indicate 2 clusters is better than 3. The plot is way nicer, clusters are separated, etc.
