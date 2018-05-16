@@ -97,8 +97,8 @@ require(factoextra)
 require(clusterSim) # predict
 
 element <- data.frame(Colif_total = 251, Colif_fecal = 241, Estrep_fecal = 109, Cont_mineral = 42, Conductivitat = 25, Solids_susp = 972, DQO_M = 715)
-element <- element - apply(countries[,-8], MARGIN = 2, mean)
-element <- element / apply(countries[,-8], MARGIN = 2, sd)
+# element <- element - apply(countries[,-8], MARGIN = 2, mean)
+# element <- element / apply(countries[,-8], MARGIN = 2, sd)
 
 countries$cluster <- as.factor(result.km.2$cluster)
 fit.l.ncv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = F) # Should use the non cv for prediction and the cv for analysis of the discriminant itself
@@ -108,7 +108,6 @@ predict(fit.l.ncv, element)
 
 fit.l.cv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = T) # Linear and crossvalidated
 sum(diag(prop.table(table(countries$cluster, fit.l.cv$class))))
-predict(fit.l.cv$terms, element)
 
 fit.q.ncv <- qda(cluster ~ ., data = countries, na.action = "na.omit", CV = F)
 sum(diag(prop.table(table(countries$cluster, predict(fit.q.ncv, countries[,-8])$class))))
