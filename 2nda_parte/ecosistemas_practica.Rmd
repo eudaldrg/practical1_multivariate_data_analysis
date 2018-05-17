@@ -75,3 +75,48 @@ clusplot(countries2, result.km.3$cluster, main = "Kmeans plot, k = 3", color = T
 ```
 
 As before, all seems to indicate 2 clusters is better than 3. The plot is way nicer, clusters are separated, etc.
+
+```{r}
+result.km.2$centers
+pca <- princomp(countries2)
+pca$scores
+plot (pca$scores[,1], pca$scores[,2])
+pca$sdev
+pca$sdev[1]^2/sum(pca$sdev^2)
+(pca$sdev[1]^2 + pca$sdev[2]^2)/sum(pca$sdev^2)
+pca$loadings
+cov(countries2[,1], pca$scores[,1])
+```
+
+```{r}
+require(MASS)
+require(ggplot2)
+require(vegan)
+require(cluster)
+require(factoextra)
+require(clusterSim) # predict
+
+element <- data.frame(Colif_total = 251, Colif_fecal = 241, Estrep_fecal = 109, Cont_mineral = 42, Conductivitat = 25, Solids_susp = 972, DQO_M = 715)
+# element <- element - apply(countries[,-8], MARGIN = 2, mean)
+# element <- element / apply(countries[,-8], MARGIN = 2, sd)
+
+countries$cluster <- as.factor(result.km.2$cluster)
+fit.l.ncv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = F) # Should use the non cv for prediction and the cv for analysis of the discriminant itself
+ct <- table(countries$cluster, predict(fit.l.ncv,countries[, -8])$class) 
+sum(diag(prop.table(ct)))
+predict(fit.l.ncv, element)
+
+fit.l.cv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = T) # Linear and crossvalidated
+sum(diag(prop.table(table(countries$cluster, fit.l.cv$class))))
+
+fit.q.ncv <- qda(cluster ~ ., data = countries, na.action = "na.omit", CV = F)
+sum(diag(prop.table(table(countries$cluster, predict(fit.q.ncv, countries[,-8])$class))))
+predict(fit.q.ncv, element)
+
+fit.q.cv <- qda(cluster ~ ., data = countries, na.action = "na.omit", CV = T)
+sum(diag(prop.table(table(countries$cluster, fit.q.cv$class))))
+```
+
+```{r}
+
+```

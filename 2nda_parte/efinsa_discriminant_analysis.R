@@ -63,7 +63,7 @@ ct
 sum(diag(prop.table(ct)))
 
 dat <- df[, -1]
-str(dat)
+# Quadratic (cross or not crossvalidated)
 fitq <- qda(cluster ~ ., data = dat)
 
 dfx <- df[which(df$cluster != 3), ]
@@ -74,4 +74,18 @@ str(dfx)
 
 dfx <- dfx[, -c(1)]
 
-model <- glm(cluster ~ ., family = "binomial", data = dfx)
+# Logistic can provide problems :'(
+model <- glm(cluster ~ ., family = "binomial", data = dfx) 
+
+
+### INFERENCE ###
+require(mvnTest) # Multivariate normality test
+u<-as.matrix(dat[which(dat$cluster==1),-11]) # Multivariate normality
+AD.test(u, qqplot = FALSE)
+
+u<-as.matrix(dat[which(dat$cluster==2),-11]) # Multivariate normality
+AD.test(u, qqplot = FALSE)
+
+
+u<-as.matrix(dat[which(dat$cluster==3),-11]) # Multivariate normality
+AD.test(u, qqplot = FALSE)
