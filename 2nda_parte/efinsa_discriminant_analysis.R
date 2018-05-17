@@ -5,6 +5,11 @@ require(cluster)
 require(factoextra)
 require(clusterSim)
 
+require(mvnTest) # Multivariate normality test
+require(biotools) # Covariance Homogeneity test
+require(ICSNP) # T2
+require(Hotelling) # T2 Permutation Test
+
 df<-read.table("./2nda_parte/efinsa.txt", sep = "\t", header=T)
 
 # Cluster
@@ -64,7 +69,7 @@ sum(diag(prop.table(ct)))
 
 dat <- df[, -1]
 # Quadratic (cross or not crossvalidated)
-fitq <- qda(cluster ~ ., data = dat)
+# fitq <- qda(cluster ~ ., data = dat)
 
 dfx <- df[which(df$cluster != 3), ]
 dfx$cluster <- as.factor(as.character(dfx$cluster))
@@ -79,13 +84,44 @@ model <- glm(cluster ~ ., family = "binomial", data = dfx)
 
 
 ### INFERENCE ###
-require(mvnTest) # Multivariate normality test
-u<-as.matrix(dat[which(dat$cluster==1),-11]) # Multivariate normality
+# First we check if they follow normal multivariate or not. If they do not, we use the same as now but using
+# Permutation tests. If few data or weird situations, we use PERMANOVA
+
+g1<-as.matrix(dat[which(dat$cluster==1),-11]) # Multivariate normality
 AD.test(u, qqplot = FALSE)
 
-u<-as.matrix(dat[which(dat$cluster==2),-11]) # Multivariate normality
+g2<-as.matrix(dat[which(dat$cluster==2),-11]) # Multivariate normality
 AD.test(u, qqplot = FALSE)
 
+g3<-as.matrix(dat[which(dat$cluster==3),-11]) # Multivariate normality
+# AD.test(u, qqplot = FALSE)
 
-u<-as.matrix(dat[which(dat$cluster==3),-11]) # Multivariate normality
-AD.test(u, qqplot = FALSE)
+# If they were all normal multivariate, then we would check covariance homogeneity
+# Covariance Homogeneity
+boxM(dat[,-11], dat[,11])
+
+#
+efinsa.manova<-manova(cbind(Juegos,Cartera,Broquer,An.lisi,Noticies,Foros,Previsi.,Inversi.,Ahorro,Temps.real)~cluster, data = dat)
+summary(efinsa.manova,test = "Pillai")
+
+# Pairwise comparison 
+#
+# Normality and same cov
+# Now should check if same mean
+HotellingsT2(g1, g2, test="chi")
+HotellingsT2(g1, g3, test="chi")
+HotellingsT2(g2, g3, test="chi")
+
+# When not normall, we use Hotellings with permutation
+Hotelling.perm12<-hotelling.test(g1, g2, perm = TRUE, progBar=T)
+Hotelling.perm13<-hotelling.test(g1, g3, perm = TRUE, progBar=T)
+Hotelling.perm23<-hotelling.test(g2, g3, perm = TRUE, progBar=T)
+
+# Just to see it more graphically, these are the distributions that follos each of the null hypothesis for a pair of
+# groups. The statistic can be obtained too, so you can check if what the function says make sense. SPOILER: It does
+hist(Hotelling.perm12$results, 50)
+hist(Hotelling.perm23$results, 50)
+hist(Hotelling.perm13$results, 50)
+Hotelling.perm13$stats$statistic # The statistic realized value goes 'Pa cuenca', so it makes sense the pvalue is 0
+
+Hotelling.perm13$pval
