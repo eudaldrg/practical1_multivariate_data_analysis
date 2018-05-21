@@ -1,38 +1,86 @@
 ---
-title: "R Notebook"
+title: 'Case of Study: Water Quality'
+author: "Eudald Romo y Laura Santulario Verdú"
+date: "05/21/2018"
 output: pdf_document
 ---
 
-```{r}
-getwd()
-countries<-read.table("./ecosystems.txt",sep="\t",header=T)
-# countries<-read.table("./2nda_parte/FANGA_TAUFA_del_tab.txt",sep="\t",header=T)
-str(countries)
+## Prior Analysis
 
-countries2 <- scale(countries)
+```{r echo = F, warning=F, message=F, error=F}
+ecosystems<-read.table("./ecosystems_windows.txt",sep="\t",header=T)
+```
 
+Let's first examine the main characteristics of our data, to base the following points of our study on them.
+
+As stated in the dataset information slides, the data represents the contamination of sea ecosystems at different points. We have 57 different data points and each of them provides information for 7 different variables.
+
+All variables are real non-negative numbers and some of them clearly represent similar kinds of contamination. For instance, __Colif_total__, __Colif_fecal__, and __Estrep_fecal__ represent all organic contamination and are highly correlated, as seen below.
+
+Lastly, it is important to note that there's a really reduced number of samples. The size of the data will be further analized when deciding upon a discriminant for the discriminant analysis, but a first observation is that no cluster analysis is going to be very robust or meaningful if any group has less than 10 variables, this means that it is highly unlikely that we have to analyse our groups hypothesis for more than around 6 groups (we'll do it anyway for up until 8 groups for the sake of illustrating what we qualitatively observed by using the standard indicators for clustering quality.).
+
+``` {r echo = F, warning = F, message = F, error = F}
+round(cor(ecosystems), 3)[1:3, 1:3]
+```
+
+With this information, we can already choose a distance matrix.
+
+## Distance matrix  
+
+Our dataset clearly does not intend to evaluate profiles, it just characterizes different samples of a certain set of variables of interest to (presumably) check similatities or dissimilarities at certain points. Furthermore, no specific value of any of the variables has more weight than others, in particular, it does not make any difference if there is a really low level of contamination of any kind in a certain point or if there's none (handling the case where a variable has 0 value only makes sense in situations where we are studying variables like human behaviour, where theres a clear difference between showing a slight interest in a topic or showing none).
+
+This leaves out with the choice of using either Euclidean or Mahalanobis distances. The high correlations shown above would advocate in favour of the Mahalanobis one, but it was explained in one of the practical sessions that in the original study that used this dataset, it was intended that certain aspects of the ecosystem, like organic contamination, had a higher weight than others. Because of that, we decided to keep those weights and use the Euclidean distance. As the variables have different units (and in particular, quite different means/standard deviations) it is important to standardize the data before computing the distances. Below is a subset of the obtained distance matrix.
+
+```{r echo = F, warning=F, message=F, error=F}
+# nrow(ecosystems)
+# head(ecosystems, 5)
+countries2 <- scale(ecosystems)
 ## Matriz de interdistancias (Parte 1)
-countries.D1 = dist(countries2, method = "euclid")
+ecosystems.D1 <- dist(countries2, method = "euclid")
+head(as.matrix(dist(countries2, method = "euclid", upper = T))[,1:5], 5)
+```
 
+## Group Structure  
+
+We're going to both do a first qualitative analysis of the group structure through hierarchical clustering methods and then corroborate and refine our first results through a more objective analysis using clustering quality indicators as $\Delta TESS$, $pseudoF$, and $silhouette$ for 1 to 8 groups (as we already explained before, more than 5 groups would result in some groups having less than 10 samples, thus makin any further inference or discriminant analysis really poor.).
+
+__Hierarchical Clustering__  
+
+At class we have considered the *single*, *complete*, *average (UPGMA)* and *ward.D2* methods. In this report, we chose to use the *ward.D2* as it tries to minimize the variance. This is coherent with most analysis that use Euclidean distance, like PCA. We expect this method to be more congruent with the distance chosen than others like *UPGMA*, which don't even need a fully defined distance, just a dissimilarity matrix, which doesn't even need to fulfill the triangular inequallity. We know that the hierarchichal clustering can be subjective, as the election of the clustering method can be biased or even have some arbitrariety. So, for the sake of completeness, we are providing two different hierarchical analysis, *ward.D2* and *UPGMA*.
+
+As can be seen below, a much clearer analysis can be done in the *ward.D2* clustering, and it seems that the most possible choices for number of groups are 2 or 3.
+
+``` {r warning=FALSE, message=F, error=F, echo=F}
 #clustering
 require(cluster)
-clusterW<-hclust(countries.D1^2, method="ward.D2")
+par(mfrow = c(1, 2))
 
+clusterW<-hclust(ecosystems.D1^2, method="ward.D2")
 #Agglomerateive clustering, UPGMA
-plot(clusterW, hang=-1, labels = countries[,1])
+plot(clusterW, hang=-1, labels = ecosystems[,1], main = "Cluster Dendogram (Ward)", cex = 0.5)
+
+clusterUPGMA <- hclust(ecosystems.D1, method = "average")
+plot(clusterUPGMA, hang=-1, labels = ecosystems[,1], main = "Cluster Dendogram (UPGMA)", cex = 0.5)
 ```
+
+__Non - Hierarchical Clustering__
+
+For the non-herarchical clustering we will use *kmeans* to obtain intra and intercluster data. As said before, we will handle the cases from 1 to 8 groups and we will compute the indicators mentioned before for the situations in which it makes sense.
+sult among different values of *k*.  
+
+As can be seen below, the hierarchical analysis is ratified by the non-hierarchical one. For all indicators, 2 and 3 groups have a higher score (in particular, the difference is specially big for $\Delta TESS$). Specifically, all the indicators for 2 groups are higher than for 3. Furthermore, the plot of the individual silhouettes for individual elements of each group clearly shows that the difference between 2 and 3 groups is likely to be a splitting of the biggest group into two smaller ones. This splitting reduces the average silhouette of the smallest group and the silhouettes of the two new groups are also smaller than the silhouette of the original one. Thus, all seems to indicate that increasing the number of clusters to 3 results in a poorer quality cluster structure. Because of that we will use 2 groups for the remaining of this study.
 
 ```{r}
 require(cclust)
 results<-data.frame()
-for(x in c (1,2,3,4,5,6,7,8,9,10)){
+for(x in c (1,2,3,4,5,6,7,8)){
   result.km.x = kmeans(countries2, centers=x, nstart=1000)
   Silh.km.x<-silhouette(result.km.x$cluster,dist(countries2))
   results[(x),1]<-x
   results[(x),2]<-result.km.x$totss
   results[(x),3]<-result.km.x$tot.withinss
 
-  if (x < 6) {
+  if (x < 9 && x != 1) {
     PseudoF.km.x<-clustIndex(result.km.x, countries2, index="calinski")
     results[(x),4]<-PseudoF.km.x
   } else {
@@ -47,46 +95,106 @@ for(x in c (1,2,3,4,5,6,7,8,9,10)){
     results[(x),5]<-Overall.Silh.km.x
     results[(x),6]<- (results[(x-1),3] - results[(x),3]) / results[(x-1),3]
   }
-  if (x != 1) plot(Silh.km.x)
+  if (x != 1 && x < 4) plot(Silh.km.x)
 }
 colnames(results)<-c("K","TOTSS","WITHINSS","PseudoF","AvgSilh","DeltaTESS")
 results
 ```
 
-One can see clearly (mainly from the silhouettes) that a small number of clusters is not going to give a great classification of the data, but a big number of clusters won't be really robust given the small amount of data that we have. If we need to choose between 2 or 3, probably choose 2, silhouettes seem better (when looked at it on every point) also has better delta tess and slightly better pseudoF. PseudoF crashes for over 6 groups cuz clustIndex programmers are not able to handle single point groups :') block below can do it properly
+# ```{r}
+# # Compute K-means for a range of values of K
+# require(vegan)
+# result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=10, iter = 1000, criterion ="calinski")
+# attributes(result.cascadeKM)
+# result.cascadeKM$results
+# result.cascadeKM$size
+# ```
 
-```{r}
-# Compute K-means for a range of values of K
-require(vegan)
-result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=10, iter = 1000, criterion ="calinski")
-attributes(result.cascadeKM)
-result.cascadeKM$results
-result.cascadeKM$size
-```
+
+## Groups characterization
+
+__Representatives characterization__
+
+Below are shown the values of the representatives of each of the two groups. The analysis has been done with standardized values, so the representatives are shown accordingly. It can be seen that the first group representative has relatively low values in all the contamination indicators. The group 2 representative has overall positive values (which mean higher than the mean values in the original data), in particular for the organic contamination variables mentioned at the beginning and in __DQO_M__ (which also determines organic contamination). Hence, group 1 represents low contamination and group 2 represents high organic contamination. This will be expanded further when analizing the groups in a 2 dimentional space, but we don't feel confident enough yet to infer anything about the inorganic contamination.
 
 ```{r}
 result.km.2 <- kmeans(countries2, centers=2, nstart=1000)
-clusplot(countries2, result.km.2$cluster, main = "Kmeans plot, k = 2", color = TRUE, labels=2)
+result.km.2$centers
+ecosystems$cluster.km.2 <- result.km.2$cluster
 ```
+
+__Representation in a low dimensional space__
+We will use the *clusplot* command (which internally uses PCA) to draw the data, as it provides nice plots. We will also compute the regular PCA of the data so that we can interpret the principal components.  
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+pca <- princomp(countries2)
+clusplot(countries2, result.km.2$cluster, 
+         col.txt = c("blue", "red")[result.km.2$cluster], 
+         labels = 2, color = TRUE, main = "Kmeans plot, k = 2", cex = 0)
+```
+
+Above are the PCA plots for 2 and three groups, together with a cluster encircling purely for representation purposes. With only 2 dimensions the explained variability is higher than 80%, so we deem 2 dimentions as sufficient.
+
+For interpretation of the principal components, we look at the loadings of the PCA. It seems that the first component (which accounts for around 60% of the explained variability) strongly depends on most of the organic contamination variables. Some inorganic contamination variables (like mineral contamination and solids in suspension) also affect it but to a lesser degree, and conductivity doesn't affect it in any appreciable way. For this reason we only deem to conclude that PC1 grows as organic contamination increases. On the other hand the PC2 seems to be more related to the inorganic contamination as it grows importantly when the mineral contamination decreases or when the conductivity increases. As can be seen in the plot above, both groups are centered in the y axis, so we don't feel confident enough to infer anything about the inorganic contamination of each of the two groups.
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+pca$loadings
+
+variability_first_component <- pca$sdev[1]^2 / sum(pca$sdev^2)
+variability_first_component
+```
+
+It is tempting to add a new group, given that it adds some inorganic separation in the contaminated group, as can be seen in the figure below. We think it is important to keep our analysis impartial and follow the indicators that we computed before viewing the 2D representation of the data, otherwise we could add bias to our study. Also, the two contaminated groups in the 3-cluster plot seem to be hard to distinguish, so this seems to agree with our Silhouettes analysis: adding a new group will only decrease the quality of our group structure. Thus we reject the 3-clusters hypothesis.
 
 ```{r}
 result.km.3 <- kmeans(countries2, centers=3, nstart=1000)
 clusplot(countries2, result.km.3$cluster, main = "Kmeans plot, k = 3", color = TRUE, labels=2)
 ```
 
-As before, all seems to indicate 2 clusters is better than 3. The plot is way nicer, clusters are separated, etc.
+## Group distinction
+
+We'll use an inference analysis to check whether the two obtained groups can be really considered different groups.
+
+We first check whether the groups follow normal multivariates using the Anderson-Darling test. As can be seen below, we can assume they follow it with a p-value of 0.05.
 
 ```{r}
-result.km.2$centers
-pca <- princomp(countries2)
-pca$scores
-plot (pca$scores[,1], pca$scores[,2])
-pca$sdev
-pca$sdev[1]^2/sum(pca$sdev^2)
-(pca$sdev[1]^2 + pca$sdev[2]^2)/sum(pca$sdev^2)
-pca$loadings
-cov(countries2[,1], pca$scores[,1])
+require(mvnTest) # Multivariate normality test
+require(biotools) # Covariance Homogeneity test
+require(ICSNP) # T2
+require(Hotelling) # T2 Permutation Test
+g1<-as.matrix(ecosystems[which(ecosystems$cluster==1),-8]) # Multivariate normality
+AD.test(g1, qqplot = FALSE)
+
+g2<-as.matrix(ecosystems[which(ecosystems$cluster==2),-8]) # Multivariate normality
+AD.test(g2, qqplot = FALSE)
 ```
+
+As they follow multivariate normals, we can test for the homogeneity of their Variance/Covariance matrices and their mean vectors. As seen in the chi-squared test below, the p-value for the homogeneity of the variance-covariance matrix is really high, so we cannot reject the null hypothesis of the variance-covariance matrix being homogenious.
+
+```{r}
+boxM(ecosystems[,-8], ecosystems[,8])
+```
+
+On the other hand, with a negligible p-value, we can reject the null hypothesis of both groups having the same mean, as can be seen below. With this, we can conclude that both groups are really different and our analysis up to this point holds.
+
+```{r}
+HotellingsT2(g1, g2, test = "chi")
+```
+
+## Prediction
+
+Lastly, we need want to predict the cluster that corresponds to a new sample. In order to do that we decide to use either a linear or a quadratic discriminant. The previous inference advocates in favour of the linear one, as the covariance matrices seem to be the same (or, at least, we cannot reject the possibility that they are the same).
+
+Furthermore, we have $57 * 7 = 399$ distinct pieces of data (seven for each of the samples). If we were to use a linear discriminant, we would need to determine $2 * 7 + 7 * 8 / 2 = 42$ estimators (7 for each element of the mean vector of a multinormal distribution of 7 variables and $7 * 8 / 2$ for the variance/covariance matrix). This leaves us with a proportion of around 10 pieces of data per estimator, a low but assumible amount. If we were to use a quadratic one, we would need to determine $2 * 7 + 2 * 7 * 8 / 2 = 70$ estimators, having only 5.7 pieces of data per estimator, clearly insufficient. Thus, we decide to use a linear one (we also double checked the quadratic one out of curiosity and it gave a lower prediction rate when using leave-one-out crossvalidation).
+
+Below we show the quality estimation of our linear discriminant. According to this analysis, the discriminant should have a low error rate of under 5%.
+
+```{r}
+fit.l.cv <- lda(cluster.km.2 ~ ., data = ecosystems, na.action = "na.omit", CV = T) # Linear and crossvalidated
+sum(diag(prop.table(table(ecosystems$cluster.km.2, fit.l.cv$class))))
+```
+Finally, we predict the cluster that corresponds to the new point (251,241,109,42,25,972,715). As can be seen below, the new point belongs to the clusten number 2 (which corresponds to organically contaminated samples) with almost total certainty. Looking at the values of the new point, this result is congruent with our analysis (as this point has higher-than-the-mean levels for most of the organic contamination variables).
 
 ```{r}
 require(MASS)
@@ -97,24 +205,21 @@ require(factoextra)
 require(clusterSim) # predict
 
 element <- data.frame(Colif_total = 251, Colif_fecal = 241, Estrep_fecal = 109, Cont_mineral = 42, Conductivitat = 25, Solids_susp = 972, DQO_M = 715)
-# element <- element - apply(countries[,-8], MARGIN = 2, mean)
-# element <- element / apply(countries[,-8], MARGIN = 2, sd)
+# element <- element - apply(ecosystems[,-8], MARGIN = 2, mean)
+# element <- element / apply(ecosystems[,-8], MARGIN = 2, sd)
 
-countries$cluster <- as.factor(result.km.2$cluster)
-fit.l.ncv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = F) # Should use the non cv for prediction and the cv for analysis of the discriminant itself
-ct <- table(countries$cluster, predict(fit.l.ncv,countries[, -8])$class) 
-sum(diag(prop.table(ct)))
+# ecosystems$cluster <- as.factor(result.km.2$cluster)
+fit.l.ncv <- lda(cluster.km.2 ~ ., data = ecosystems, na.action = "na.omit", CV = F) # Should use the non cv for prediction and the cv for analysis of the discriminant itself
+# ct <- table(ecosystems$cluster, predict(fit.l.ncv,ecosystems[, -8])$class) 
+# sum(diag(prop.table(ct)))
 predict(fit.l.ncv, element)
 
-fit.l.cv <- lda(cluster ~ ., data = countries, na.action = "na.omit", CV = T) # Linear and crossvalidated
-sum(diag(prop.table(table(countries$cluster, fit.l.cv$class))))
+# fit.q.ncv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = F)
+# sum(diag(prop.table(table(ecosystems$cluster, predict(fit.q.ncv, ecosystems[,-8])$class))))
+# predict(fit.q.ncv, element)
 
-fit.q.ncv <- qda(cluster ~ ., data = countries, na.action = "na.omit", CV = F)
-sum(diag(prop.table(table(countries$cluster, predict(fit.q.ncv, countries[,-8])$class))))
-predict(fit.q.ncv, element)
-
-fit.q.cv <- qda(cluster ~ ., data = countries, na.action = "na.omit", CV = T)
-sum(diag(prop.table(table(countries$cluster, fit.q.cv$class))))
+# fit.q.cv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = T)
+# sum(diag(prop.table(table(ecosystems$cluster, fit.q.cv$class))))
 ```
 
 ```{r}

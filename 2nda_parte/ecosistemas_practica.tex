@@ -1,0 +1,746 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={Case of Study: Water Quality},
+            pdfauthor={Eudald Romo y Laura Santulario Verdú},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+  \title{Case of Study: Water Quality}
+  \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+  \author{Eudald Romo y Laura Santulario Verdú}
+  \preauthor{\centering\large\emph}
+  \postauthor{\par}
+  \predate{\centering\large\emph}
+  \postdate{\par}
+  \date{05/21/2018}
+
+
+\begin{document}
+\maketitle
+
+\subsection{Prior Analysis}\label{prior-analysis}
+
+Let's first examine the main characteristics of our data, to base the
+following points of our study on them.
+
+As stated in the dataset information slides, the data represents the
+contamination of sea ecosystems at different points. We have 57
+different data points and each of them provides information for 7
+different variables.
+
+All variables are real non-negative numbers and some of them clearly
+represent similar kinds of contamination. For instance,
+\textbf{Colif\_total}, \textbf{Colif\_fecal}, and \textbf{Estrep\_fecal}
+represent all organic contamination and are highly correlated, as seen
+below.
+
+Lastly, it is important to note that there's a really reduced number of
+samples. The size of the data will be further analized when deciding
+upon a discriminant for the discriminant analysis, but a first
+observation is that no cluster analysis is going to be very robust or
+meaningful if any group has less than 10 variables, this means that it
+is highly unlikely that we have to analyse our groups hypothesis for
+more than around 6 groups (we'll do it anyway for up until 8 groups for
+the sake of illustrating what we qualitatively observed by using the
+standard indicators for clustering quality.).
+
+\begin{verbatim}
+##              Colif_total Colif_fecal Estrep_fecal
+## Colif_total        1.000       0.988        0.841
+## Colif_fecal        0.988       1.000        0.861
+## Estrep_fecal       0.841       0.861        1.000
+\end{verbatim}
+
+With this information, we can already choose a distance matrix.
+
+\subsection{Distance matrix}\label{distance-matrix}
+
+Our dataset clearly does not intend to evaluate profiles, it just
+characterizes different samples of a certain set of variables of
+interest to (presumably) check similatities or dissimilarities at
+certain points. Furthermore, no specific value of any of the variables
+has more weight than others, in particular, it does not make any
+difference if there is a really low level of contamination of any kind
+in a certain point or if there's none (handling the case where a
+variable has 0 value only makes sense in situations where we are
+studying variables like human behaviour, where theres a clear difference
+between showing a slight interest in a topic or showing none).
+
+This leaves out with the choice of using either Euclidean or Mahalanobis
+distances. The high correlations shown above would advocate in favour of
+the Mahalanobis one, but it was explained in one of the practical
+sessions that in the original study that used this dataset, it was
+intended that certain aspects of the ecosystem, like organic
+contamination, had a higher weight than others. Because of that, we
+decided to keep those weights and use the Euclidean distance. As the
+variables have different units (and in particular, quite different
+means/standard deviations) it is important to standardize the data
+before computing the distances. Below is a subset of the obtained
+distance matrix.
+
+\begin{verbatim}
+##          1        2        3        4        5
+## 1 0.000000 5.183625 5.618755 6.067342 3.350898
+## 2 5.183625 0.000000 2.471269 5.817088 3.721250
+## 3 5.618755 2.471269 0.000000 3.787447 3.037862
+## 4 6.067342 5.817088 3.787447 0.000000 3.665658
+## 5 3.350898 3.721250 3.037862 3.665658 0.000000
+\end{verbatim}
+
+\subsection{Group Structure}\label{group-structure}
+
+We're going to both do a first qualitative analysis of the group
+structure through hierarchical clustering methods and then corroborate
+and refine our first results through a more objective analysis using
+clustering quality indicators as \(\Delta TESS\), \(pseudoF\), and
+\(silhouette\) for 1 to 8 groups (as we already explained before, more
+than 5 groups would result in some groups having less than 10 samples,
+thus makin any further inference or discriminant analysis really poor.).
+
+\textbf{Hierarchical Clustering}
+
+At class we have considered the \emph{single}, \emph{complete},
+\emph{average (UPGMA)} and \emph{ward.D2} methods. In this report, we
+chose to use the \emph{ward.D2} as it tries to minimize the variance.
+This is coherent with most analysis that use Euclidean distance, like
+PCA. We expect this method to be more congruent with the distance chosen
+than others like \emph{UPGMA}, which don't even need a fully defined
+distance, just a dissimilarity matrix, which doesn't even need to
+fulfill the triangular inequallity. We know that the hierarchichal
+clustering can be subjective, as the election of the clustering method
+can be biased or even have some arbitrariety. So, for the sake of
+completeness, we are providing two different hierarchical analysis,
+\emph{ward.D2} and \emph{UPGMA}.
+
+As can be seen below, a much clearer analysis can be done in the
+\emph{ward.D2} clustering, and it seems that the most possible choices
+for number of groups are 2 or 3.
+
+\includegraphics{ecosistemas_practica_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\textbf{Non - Hierarchical Clustering}
+
+For the non-herarchical clustering we will use \emph{kmeans} to obtain
+intra and intercluster data. As said before, we will handle the cases
+from 1 to 8 groups and we will compute the indicators mentioned before
+for the situations in which it makes sense. sult among different values
+of \emph{k}.
+
+As can be seen below, the hierarchical analysis is ratified by the
+non-hierarchical one. For all indicators, 2 and 3 groups have a higher
+score (in particular, the difference is specially big for
+\(\Delta TESS\)). Specifically, all the indicators for 2 groups are
+higher than for 3. Furthermore, the plot of the individual silhouettes
+for individual elements of each group clearly shows that the difference
+between 2 and 3 groups is likely to be a splitting of the biggest group
+into two smaller ones. This splitting reduces the average silhouette of
+the smallest group and the silhouettes of the two new groups are also
+smaller than the silhouette of the original one. Thus, all seems to
+indicate that increasing the number of clusters to 3 results in a poorer
+quality cluster structure. Because of that we will use 2 groups for the
+remaining of this study.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(cclust)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: cclust
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{results<-}\KeywordTok{data.frame}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{(x }\ControlFlowTok{in} \KeywordTok{c}\NormalTok{ (}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{,}\DecValTok{3}\NormalTok{,}\DecValTok{4}\NormalTok{,}\DecValTok{5}\NormalTok{,}\DecValTok{6}\NormalTok{,}\DecValTok{7}\NormalTok{,}\DecValTok{8}\NormalTok{))\{}
+\NormalTok{  result.km.x =}\StringTok{ }\KeywordTok{kmeans}\NormalTok{(countries2, }\DataTypeTok{centers=}\NormalTok{x, }\DataTypeTok{nstart=}\DecValTok{1000}\NormalTok{)}
+\NormalTok{  Silh.km.x<-}\KeywordTok{silhouette}\NormalTok{(result.km.x}\OperatorTok{$}\NormalTok{cluster,}\KeywordTok{dist}\NormalTok{(countries2))}
+\NormalTok{  results[(x),}\DecValTok{1}\NormalTok{]<-x}
+\NormalTok{  results[(x),}\DecValTok{2}\NormalTok{]<-result.km.x}\OperatorTok{$}\NormalTok{totss}
+\NormalTok{  results[(x),}\DecValTok{3}\NormalTok{]<-result.km.x}\OperatorTok{$}\NormalTok{tot.withinss}
+
+  \ControlFlowTok{if}\NormalTok{ (x }\OperatorTok{<}\StringTok{ }\DecValTok{9} \OperatorTok{&&}\StringTok{ }\NormalTok{x }\OperatorTok{!=}\StringTok{ }\DecValTok{1}\NormalTok{) \{}
+\NormalTok{    PseudoF.km.x<-}\KeywordTok{clustIndex}\NormalTok{(result.km.x, countries2, }\DataTypeTok{index=}\StringTok{"calinski"}\NormalTok{)}
+\NormalTok{    results[(x),}\DecValTok{4}\NormalTok{]<-PseudoF.km.x}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    results[x,}\DecValTok{4}\NormalTok{] <-}\StringTok{ }\OtherTok{NA}
+\NormalTok{  \}}
+  
+  \ControlFlowTok{if}\NormalTok{ (x }\OperatorTok{==}\StringTok{ }\DecValTok{1}\NormalTok{) \{}
+\NormalTok{    results[(x),}\DecValTok{5}\NormalTok{]<-}\StringTok{ }\OtherTok{NA}
+\NormalTok{    results[(x),}\DecValTok{6}\NormalTok{]<-}\StringTok{ }\OtherTok{NA}
+\NormalTok{  \} }\ControlFlowTok{else}\NormalTok{ \{}
+\NormalTok{    Overall.Silh.km.x<-}\KeywordTok{mean}\NormalTok{(Silh.km.x[,}\DecValTok{3}\NormalTok{])}
+\NormalTok{    results[(x),}\DecValTok{5}\NormalTok{]<-Overall.Silh.km.x}
+\NormalTok{    results[(x),}\DecValTok{6}\NormalTok{]<-}\StringTok{ }\NormalTok{(results[(x}\OperatorTok{-}\DecValTok{1}\NormalTok{),}\DecValTok{3}\NormalTok{] }\OperatorTok{-}\StringTok{ }\NormalTok{results[(x),}\DecValTok{3}\NormalTok{]) }\OperatorTok{/}\StringTok{ }\NormalTok{results[(x}\OperatorTok{-}\DecValTok{1}\NormalTok{),}\DecValTok{3}\NormalTok{]}
+\NormalTok{  \}}
+  \ControlFlowTok{if}\NormalTok{ (x }\OperatorTok{!=}\StringTok{ }\DecValTok{1} \OperatorTok{&&}\StringTok{ }\NormalTok{x }\OperatorTok{<}\StringTok{ }\DecValTok{4}\NormalTok{) }\KeywordTok{plot}\NormalTok{(Silh.km.x)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ecosistemas_practica_files/figure-latex/unnamed-chunk-5-1.pdf}
+\includegraphics{ecosistemas_practica_files/figure-latex/unnamed-chunk-5-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{colnames}\NormalTok{(results)<-}\KeywordTok{c}\NormalTok{(}\StringTok{"K"}\NormalTok{,}\StringTok{"TOTSS"}\NormalTok{,}\StringTok{"WITHINSS"}\NormalTok{,}\StringTok{"PseudoF"}\NormalTok{,}\StringTok{"AvgSilh"}\NormalTok{,}\StringTok{"DeltaTESS"}\NormalTok{)}
+\NormalTok{results}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   K TOTSS  WITHINSS  PseudoF   AvgSilh  DeltaTESS
+## 1 1   392 392.00000       NA        NA         NA
+## 2 2   392 235.39776 36.58966 0.3974478 0.39949551
+## 3 3   392 168.38508 35.85592 0.2955183 0.28467849
+## 4 4   392 142.55117 30.91472 0.2752161 0.15342161
+## 5 5   392 122.64389 28.55119 0.2709973 0.13965007
+## 6 6   392 109.48461 26.32020 0.2623816 0.10729669
+## 7 7   392  96.46200 25.53147 0.2516608 0.11894469
+## 8 8   392  87.14405 24.48809 0.2426378 0.09659709
+\end{verbatim}
+
+\section{\texorpdfstring{\texttt{\{r\}\ \#\ \#\ Compute\ K-means\ for\ a\ range\ of\ values\ of\ K\ \#\ require(vegan)\ \#\ result.cascadeKM\ =\ cascadeKM(countries2,\ inf.gr=2,\ sup.gr=10,\ iter\ =\ 1000,\ criterion\ ="calinski")\ \#\ attributes(result.cascadeKM)\ \#\ result.cascadeKM\$results\ \#\ result.cascadeKM\$size\ \#}}{\{r\} \# \# Compute K-means for a range of values of K \# require(vegan) \# result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=10, iter = 1000, criterion ="calinski") \# attributes(result.cascadeKM) \# result.cascadeKM\$results \# result.cascadeKM\$size \#}}\label{r-compute-k-means-for-a-range-of-values-of-k-requirevegan-result.cascadekm-cascadekmcountries2-inf.gr2-sup.gr10-iter-1000-criterion-calinski-attributesresult.cascadekm-result.cascadekmresults-result.cascadekmsize}
+
+\subsection{Groups characterization}\label{groups-characterization}
+
+\textbf{Representatives characterization}
+
+Below are shown the values of the representatives of each of the two
+groups. The analysis has been done with standardized values, so the
+representatives are shown accordingly. It can be seen that the first
+group representative has relatively low values in all the contamination
+indicators. The group 2 representative has overall positive values
+(which mean higher than the mean values in the original data), in
+particular for the organic contamination variables mentioned at the
+beginning and in \textbf{DQO\_M} (which also determines organic
+contamination). Hence, group 1 represents low contamination and group 2
+represents high organic contamination. This will be expanded further
+when analizing the groups in a 2 dimentional space, but we don't feel
+confident enough yet to infer anything about the inorganic
+contamination.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{result.km.}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\KeywordTok{kmeans}\NormalTok{(countries2, }\DataTypeTok{centers=}\DecValTok{2}\NormalTok{, }\DataTypeTok{nstart=}\DecValTok{1000}\NormalTok{)}
+\NormalTok{result.km.}\DecValTok{2}\OperatorTok{$}\NormalTok{centers}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##   Colif_total Colif_fecal Estrep_fecal Cont_mineral Conductivitat
+## 1  -1.4652823  -1.4829914   -1.5853018   -0.4077678   -0.30475090
+## 2   0.3907419   0.3954644    0.4227471    0.1087381    0.08126691
+##   Solids_susp      DQO_M
+## 1   -1.118891 -1.3900417
+## 2    0.298371  0.3706778
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ecosystems}\OperatorTok{$}\NormalTok{cluster.km.}\DecValTok{2}\NormalTok{ <-}\StringTok{ }\NormalTok{result.km.}\DecValTok{2}\OperatorTok{$}\NormalTok{cluster}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{Representation in a low dimensional space} We will use the
+\emph{clusplot} command (which internally uses PCA) to draw the data, as
+it provides nice plots. We will also compute the regular PCA of the data
+so that we can interpret the principal components.
+
+\includegraphics{ecosistemas_practica_files/figure-latex/unnamed-chunk-7-1.pdf}
+
+Above are the PCA plots for 2 and three groups, together with a cluster
+encircling purely for representation purposes. With only 2 dimensions
+the explained variability is higher than 80\%, so we deem 2 dimentions
+as sufficient.
+
+For interpretation of the principal components, we look at the loadings
+of the PCA. It seems that the first component (which accounts for around
+60\% of the explained variability) strongly depends on most of the
+organic contamination variables. Some inorganic contamination variables
+(like mineral contamination and solids in suspension) also affect it but
+to a lesser degree, and conductivity doesn't affect it in any
+appreciable way. For this reason we only deem to conclude that PC1 grows
+as organic contamination increases. On the other hand the PC2 seems to
+be more related to the inorganic contamination as it grows importantly
+when the mineral contamination decreases or when the conductivity
+increases. As can be seen in the plot above, both groups are centered in
+the y axis, so we don't feel confident enough to infer anything about
+the inorganic contamination of each of the two groups.
+
+\begin{verbatim}
+## 
+## Loadings:
+##               Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7
+## Colif_total    0.451  0.251                0.556         0.642
+## Colif_fecal    0.459  0.239                0.393        -0.752
+## Estrep_fecal   0.429  0.137  0.531 -0.306 -0.563  0.323       
+## Cont_mineral   0.206 -0.547  0.423  0.691                     
+## Conductivitat         0.656 -0.196  0.643 -0.338              
+## Solids_susp    0.384 -0.320 -0.650        -0.107  0.559       
+## DQO_M          0.459 -0.170 -0.261 -0.110 -0.304 -0.755  0.133
+## 
+##                Comp.1 Comp.2 Comp.3 Comp.4 Comp.5 Comp.6 Comp.7
+## SS loadings     1.000  1.000  1.000  1.000  1.000  1.000  1.000
+## Proportion Var  0.143  0.143  0.143  0.143  0.143  0.143  0.143
+## Cumulative Var  0.143  0.286  0.429  0.571  0.714  0.857  1.000
+\end{verbatim}
+
+\begin{verbatim}
+##    Comp.1 
+## 0.5902417
+\end{verbatim}
+
+It is tempting to add a new group, given that it adds some inorganic
+separation in the contaminated group, as can be seen in the figure
+below. We think it is important to keep our analysis impartial and
+follow the indicators that we computed before viewing the 2D
+representation of the data, otherwise we could add bias to our study.
+Also, the two contaminated groups in the 3-cluster plot seem to be hard
+to distinguish, so this seems to agree with our Silhouettes analysis:
+adding a new group will only decrease the quality of our group
+structure. Thus we reject the 3-clusters hypothesis.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{result.km.}\DecValTok{3}\NormalTok{ <-}\StringTok{ }\KeywordTok{kmeans}\NormalTok{(countries2, }\DataTypeTok{centers=}\DecValTok{3}\NormalTok{, }\DataTypeTok{nstart=}\DecValTok{1000}\NormalTok{)}
+\KeywordTok{clusplot}\NormalTok{(countries2, result.km.}\DecValTok{3}\OperatorTok{$}\NormalTok{cluster, }\DataTypeTok{main =} \StringTok{"Kmeans plot, k = 3"}\NormalTok{, }\DataTypeTok{color =} \OtherTok{TRUE}\NormalTok{, }\DataTypeTok{labels=}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{ecosistemas_practica_files/figure-latex/unnamed-chunk-9-1.pdf}
+
+\subsection{Group distinction}\label{group-distinction}
+
+We'll use an inference analysis to check whether the two obtained groups
+can be really considered different groups.
+
+We first check whether the groups follow normal multivariates using the
+Anderson-Darling test. As can be seen below, we can assume they follow
+it with a p-value of 0.05.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(mvnTest) }\CommentTok{# Multivariate normality test}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: mvnTest
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: mvtnorm
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(biotools) }\CommentTok{# Covariance Homogeneity test}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: biotools
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: rpanel
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: tcltk
+\end{verbatim}
+
+\begin{verbatim}
+## Package `rpanel', version 1.1-4: type help(rpanel) for summary information
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: tkrplot
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: MASS
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: lattice
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: SpatialEpi
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: sp
+\end{verbatim}
+
+\begin{verbatim}
+## ---
+## biotools version 3.1
+\end{verbatim}
+
+\begin{verbatim}
+## 
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(ICSNP) }\CommentTok{# T2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: ICSNP
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: ICS
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(Hotelling) }\CommentTok{# T2 Permutation Test}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: Hotelling
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: corpcor
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{g1<-}\KeywordTok{as.matrix}\NormalTok{(ecosystems[}\KeywordTok{which}\NormalTok{(ecosystems}\OperatorTok{$}\NormalTok{cluster}\OperatorTok{==}\DecValTok{1}\NormalTok{),}\OperatorTok{-}\DecValTok{8}\NormalTok{]) }\CommentTok{# Multivariate normality}
+\KeywordTok{AD.test}\NormalTok{(g1, }\DataTypeTok{qqplot =} \OtherTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##             Anderson-Darling test for Multivariate Normality 
+## 
+##   data : g1 
+## 
+##   AD              : 0.7579276 
+##   p-value         : 0.819718 
+## 
+##   Result  : Data are multivariate normal (sig.level = 0.05)
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{g2<-}\KeywordTok{as.matrix}\NormalTok{(ecosystems[}\KeywordTok{which}\NormalTok{(ecosystems}\OperatorTok{$}\NormalTok{cluster}\OperatorTok{==}\DecValTok{2}\NormalTok{),}\OperatorTok{-}\DecValTok{8}\NormalTok{]) }\CommentTok{# Multivariate normality}
+\KeywordTok{AD.test}\NormalTok{(g2, }\DataTypeTok{qqplot =} \OtherTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##             Anderson-Darling test for Multivariate Normality 
+## 
+##   data : g2 
+## 
+##   AD              : 0.4142843 
+##   p-value         : 0.6517348 
+## 
+##   Result  : Data are multivariate normal (sig.level = 0.05)
+\end{verbatim}
+
+As they follow multivariate normals, we can test for the homogeneity of
+their Variance/Covariance matrices and their mean vectors. As seen in
+the chi-squared test below, the p-value for the homogeneity of the
+variance-covariance matrix is really high, so we cannot reject the null
+hypothesis of the variance-covariance matrix being homogenious.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{boxM}\NormalTok{(ecosystems[,}\OperatorTok{-}\DecValTok{8}\NormalTok{], ecosystems[,}\DecValTok{8}\NormalTok{])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Box's M-test for Homogeneity of Covariance Matrices
+## 
+## data:  ecosystems[, -8]
+## Chi-Sq (approx.) = 22.83, df = 28, p-value = 0.7415
+\end{verbatim}
+
+On the other hand, with a negligible p-value, we can reject the null
+hypothesis of both groups having the same mean, as can be seen below.
+With this, we can conclude that both groups are really different and our
+analysis up to this point holds.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{HotellingsT2}\NormalTok{(g1, g2, }\DataTypeTok{test =} \StringTok{"chi"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  Hotelling's two sample T2-test
+## 
+## data:  g1 and g2
+## T.2 = 175.37, df = 7, p-value < 2.2e-16
+## alternative hypothesis: true location difference is not equal to c(0,0,0,0,0,0,0)
+\end{verbatim}
+
+\subsection{Prediction}\label{prediction}
+
+Lastly, we need want to predict the cluster that corresponds to a new
+sample. In order to do that we decide to use either a linear or a
+quadratic discriminant. The previous inference advocates in favour of
+the linear one, as the covariance matrices seem to be the same (or, at
+least, we cannot reject the possibility that they are the same).
+
+Furthermore, we have \(57 * 7 = 399\) distinct pieces of data (seven for
+each of the samples). If we were to use a linear discriminant, we would
+need to determine \(2 * 7 + 7 * 8 / 2 = 42\) estimators (7 for each
+element of the mean vector of a multinormal distribution of 7 variables
+and \(7 * 8 / 2\) for the variance/covariance matrix). This leaves us
+with a proportion of around 10 pieces of data per estimator, a low but
+assumible amount. If we were to use a quadratic one, we would need to
+determine \(2 * 7 + 2 * 7 * 8 / 2 = 70\) estimators, having only 5.7
+pieces of data per estimator, clearly insufficient. Thus, we decide to
+use a linear one (we also double checked the quadratic one out of
+curiosity and it gave a lower prediction rate when using leave-one-out
+crossvalidation).
+
+Below we show the quality estimation of our linear discriminant.
+According to this analysis, the discriminant should have a low error
+rate of under 5\%.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit.l.cv <-}\StringTok{ }\KeywordTok{lda}\NormalTok{(cluster.km.}\DecValTok{2} \OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ ecosystems, }\DataTypeTok{na.action =} \StringTok{"na.omit"}\NormalTok{, }\DataTypeTok{CV =}\NormalTok{ T) }\CommentTok{# Linear and crossvalidated}
+\KeywordTok{sum}\NormalTok{(}\KeywordTok{diag}\NormalTok{(}\KeywordTok{prop.table}\NormalTok{(}\KeywordTok{table}\NormalTok{(ecosystems}\OperatorTok{$}\NormalTok{cluster.km.}\DecValTok{2}\NormalTok{, fit.l.cv}\OperatorTok{$}\NormalTok{class))))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.9649123
+\end{verbatim}
+
+Finally, we predict the cluster that corresponds to the new point
+(251,241,109,42,25,972,715). As can be seen below, the new point belongs
+to the clusten number 2 (which corresponds to organically contaminated
+samples) with almost total certainty. Looking at the values of the new
+point, this result is congruent with our analysis (as this point has
+higher-than-the-mean levels for most of the organic contamination
+variables).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(MASS)}
+\KeywordTok{require}\NormalTok{(ggplot2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: ggplot2
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(vegan)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: vegan
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: permute
+\end{verbatim}
+
+\begin{verbatim}
+## This is vegan 2.5-2
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(cluster)}
+\KeywordTok{require}\NormalTok{(factoextra)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: factoextra
+\end{verbatim}
+
+\begin{verbatim}
+## Welcome! Related Books: `Practical Guide To Cluster Analysis in R` at https://goo.gl/13EFCZ
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{require}\NormalTok{(clusterSim) }\CommentTok{# predict}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: clusterSim
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## This is package 'modeest' written by P. PONCET.
+## For a complete list of functions, use 'library(help = "modeest")' or 'help.start()'.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{element <-}\StringTok{ }\KeywordTok{data.frame}\NormalTok{(}\DataTypeTok{Colif_total =} \DecValTok{251}\NormalTok{, }\DataTypeTok{Colif_fecal =} \DecValTok{241}\NormalTok{, }\DataTypeTok{Estrep_fecal =} \DecValTok{109}\NormalTok{, }\DataTypeTok{Cont_mineral =} \DecValTok{42}\NormalTok{, }\DataTypeTok{Conductivitat =} \DecValTok{25}\NormalTok{, }\DataTypeTok{Solids_susp =} \DecValTok{972}\NormalTok{, }\DataTypeTok{DQO_M =} \DecValTok{715}\NormalTok{)}
+\CommentTok{# element <- element - apply(ecosystems[,-8], MARGIN = 2, mean)}
+\CommentTok{# element <- element / apply(ecosystems[,-8], MARGIN = 2, sd)}
+
+\CommentTok{# ecosystems$cluster <- as.factor(result.km.2$cluster)}
+\NormalTok{fit.l.ncv <-}\StringTok{ }\KeywordTok{lda}\NormalTok{(cluster.km.}\DecValTok{2} \OperatorTok{~}\StringTok{ }\NormalTok{., }\DataTypeTok{data =}\NormalTok{ ecosystems, }\DataTypeTok{na.action =} \StringTok{"na.omit"}\NormalTok{, }\DataTypeTok{CV =}\NormalTok{ F) }\CommentTok{# Should use the non cv for prediction and the cv for analysis of the discriminant itself}
+\CommentTok{# ct <- table(ecosystems$cluster, predict(fit.l.ncv,ecosystems[, -8])$class) }
+\CommentTok{# sum(diag(prop.table(ct)))}
+\KeywordTok{predict}\NormalTok{(fit.l.ncv, element)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $class
+## [1] 2
+## Levels: 1 2
+## 
+## $posterior
+##              1         2
+## 1 6.268562e-06 0.9999937
+## 
+## $x
+##        LD1
+## 1 1.231824
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# fit.q.ncv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = F)}
+\CommentTok{# sum(diag(prop.table(table(ecosystems$cluster, predict(fit.q.ncv, ecosystems[,-8])$class))))}
+\CommentTok{# predict(fit.q.ncv, element)}
+
+\CommentTok{# fit.q.cv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = T)}
+\CommentTok{# sum(diag(prop.table(table(ecosystems$cluster, fit.q.cv$class))))}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}
