@@ -1,6 +1,6 @@
 ---
 title: 'Case of Study: Water Quality'
-author: "Eudald Romo y Laura Santulario Verdú"
+author: "Eudald Romo y Laura Santulario Verd?"
 date: "05/21/2018"
 output: pdf_document
 ---
@@ -8,7 +8,13 @@ output: pdf_document
 ## Prior Analysis
 
 ```{r echo = F, warning=F, message=F, error=F}
-ecosystems<-read.table("./ecosystems_windows.txt",sep="\t",header=T)
+require(mvnTest) # Multivariate normality test
+require(biotools) # Covariance Homogeneity test
+require(ICSNP) # T2
+require(Hotelling) # T2 Permutation Test
+require(MASS)
+require(cclust)
+ecosystems<-read.table("./ecosystems.txt",sep="\t",header=T)
 ```
 
 Let's first examine the main characteristics of our data, to base the following points of our study on them.
@@ -50,7 +56,7 @@ At class we have considered the *single*, *complete*, *average (UPGMA)* and *war
 
 As can be seen below, a much clearer analysis can be done in the *ward.D2* clustering, and it seems that the most possible choices for number of groups are 2 or 3.
 
-``` {r warning=FALSE, message=F, error=F, echo=F}
+``` {r, warning=FALSE, message=F, error=F, echo=F}
 #clustering
 require(cluster)
 par(mfrow = c(1, 2))
@@ -70,8 +76,8 @@ sult among different values of *k*.
 
 As can be seen below, the hierarchical analysis is ratified by the non-hierarchical one. For all indicators, 2 and 3 groups have a higher score (in particular, the difference is specially big for $\Delta TESS$). Specifically, all the indicators for 2 groups are higher than for 3. Furthermore, the plot of the individual silhouettes for individual elements of each group clearly shows that the difference between 2 and 3 groups is likely to be a splitting of the biggest group into two smaller ones. This splitting reduces the average silhouette of the smallest group and the silhouettes of the two new groups are also smaller than the silhouette of the original one. Thus, all seems to indicate that increasing the number of clusters to 3 results in a poorer quality cluster structure. Because of that we will use 2 groups for the remaining of this study.
 
-```{r}
-require(cclust)
+```{r, echo = F, message= F, warning= F, error=F}
+par(mfrow = c(1, 2))
 results<-data.frame()
 for(x in c (1,2,3,4,5,6,7,8)){
   result.km.x = kmeans(countries2, centers=x, nstart=1000)
@@ -95,27 +101,17 @@ for(x in c (1,2,3,4,5,6,7,8)){
     results[(x),5]<-Overall.Silh.km.x
     results[(x),6]<- (results[(x-1),3] - results[(x),3]) / results[(x-1),3]
   }
-  if (x != 1 && x < 4) plot(Silh.km.x)
+  if (x != 1 && x < 4) plot(Silh.km.x, cex = 0.5, main = paste("Silhouette", x, "clusters"))
 }
 colnames(results)<-c("K","TOTSS","WITHINSS","PseudoF","AvgSilh","DeltaTESS")
 results
 ```
 
-# ```{r}
-# # Compute K-means for a range of values of K
-# require(vegan)
-# result.cascadeKM = cascadeKM(countries2, inf.gr=2, sup.gr=10, iter = 1000, criterion ="calinski")
-# attributes(result.cascadeKM)
-# result.cascadeKM$results
-# result.cascadeKM$size
-# ```
-
-
 ## Groups characterization
 
 __Representatives characterization__
 
-Below are shown the values of the representatives of each of the two groups. The analysis has been done with standardized values, so the representatives are shown accordingly. It can be seen that the first group representative has relatively low values in all the contamination indicators. The group 2 representative has overall positive values (which mean higher than the mean values in the original data), in particular for the organic contamination variables mentioned at the beginning and in __DQO_M__ (which also determines organic contamination). Hence, group 1 represents low contamination and group 2 represents high organic contamination. This will be expanded further when analizing the groups in a 2 dimentional space, but we don't feel confident enough yet to infer anything about the inorganic contamination.
+Below are shown the values of the representatives of each of the two groups. The analysis has been done with standardized values, so the representatives are shown accordingly. It can be seen that the second group representative has relatively low values in all the contamination indicators. The group 1 representative has overall positive values (which mean higher than the mean values in the original data), in particular for the organic contamination variables mentioned at the beginning and in __DQO_M__ (which also determines organic contamination). Hence, group 2 represents low contamination and group 1 represents high organic contamination. This will be expanded further when analizing the groups in a 2 dimentional space, but we don't feel confident enough yet to infer anything about the inorganic contamination.
 
 ```{r}
 result.km.2 <- kmeans(countries2, centers=2, nstart=1000)
@@ -134,9 +130,9 @@ clusplot(countries2, result.km.2$cluster,
          labels = 2, color = TRUE, main = "Kmeans plot, k = 2", cex = 0)
 ```
 
-Above are the PCA plots for 2 and three groups, together with a cluster encircling purely for representation purposes. With only 2 dimensions the explained variability is higher than 80%, so we deem 2 dimentions as sufficient.
+Above is the PCA plots for 2 groups, together with a cluster encircling purely for representation purposes. With only 2 dimensions the explained variability is higher than 80%, so we deem 2 dimentions as sufficient.
 
-For interpretation of the principal components, we look at the loadings of the PCA. It seems that the first component (which accounts for around 60% of the explained variability) strongly depends on most of the organic contamination variables. Some inorganic contamination variables (like mineral contamination and solids in suspension) also affect it but to a lesser degree, and conductivity doesn't affect it in any appreciable way. For this reason we only deem to conclude that PC1 grows as organic contamination increases. On the other hand the PC2 seems to be more related to the inorganic contamination as it grows importantly when the mineral contamination decreases or when the conductivity increases. As can be seen in the plot above, both groups are centered in the y axis, so we don't feel confident enough to infer anything about the inorganic contamination of each of the two groups.
+For interpretation of the principal components, we look at the loadings of the PCA. It seems that the first component (which accounts for around 60% of the explained variability) strongly depends on most of the organic contamination variables. Some inorganic contamination variables (like mineral contamination and solids in suspension) also affect it but to a lesser degree, and conductivity doesn't affect it in any appreciable way. For this reason we only deem to conclude that PC1 grows as organic contamination decreases. On the other hand the PC2 seems to be more related to the inorganic contamination as it grows importantly when the mineral contamination decreases or when the conductivity increases. As can be seen in the plot above, both groups are centered in the y axis, so we don't feel confident enough to infer anything about the inorganic contamination of each of the two groups.
 
 ```{r message=FALSE, warning=FALSE, echo = FALSE}
 pca$loadings
@@ -159,21 +155,21 @@ We'll use an inference analysis to check whether the two obtained groups can be 
 We first check whether the groups follow normal multivariates using the Anderson-Darling test. As can be seen below, we can assume they follow it with a p-value of 0.05.
 
 ```{r}
-require(mvnTest) # Multivariate normality test
-require(biotools) # Covariance Homogeneity test
-require(ICSNP) # T2
-require(Hotelling) # T2 Permutation Test
-g1<-as.matrix(ecosystems[which(ecosystems$cluster==1),-8]) # Multivariate normality
+g1<-as.matrix(ecosystems[which(ecosystems$cluster.km.2==1),-8]) # Multivariate normality
 AD.test(g1, qqplot = FALSE)
 
-g2<-as.matrix(ecosystems[which(ecosystems$cluster==2),-8]) # Multivariate normality
+g2<-as.matrix(ecosystems[which(ecosystems$cluster.km.2==2),-8]) # Multivariate normality
 AD.test(g2, qqplot = FALSE)
 ```
 
-As they follow multivariate normals, we can test for the homogeneity of their Variance/Covariance matrices and their mean vectors. As seen in the chi-squared test below, the p-value for the homogeneity of the variance-covariance matrix is really high, so we cannot reject the null hypothesis of the variance-covariance matrix being homogenious.
+As they follow multivariate normals, we can test for the homogeneity of their Variance/Covariance matrices and their mean vectors. 
 
-```{r}
-boxM(ecosystems[,-8], ecosystems[,8])
+We first ran a chi-squared test using the boxM command and we got a p-value of around 0.7, so we cannot reject the null hypothesis of the variance-covariance matrix being homogenious.
+
+```{r, echo = F, message = F, warning=F, error = F}
+# efinsa.manova<-manova(cbind(Colif_total, Colif_fecal, Estrep_fecal, Cont_mineral, Conductivitat, Solids_susp, DQO_M)~cluster.km.2, data = ecosystems)
+# summary(efinsa.manova,test = "Pillai")
+# boxM(ecosystems[,-8], ecosystems[,8])
 ```
 
 On the other hand, with a negligible p-value, we can reject the null hypothesis of both groups having the same mean, as can be seen below. With this, we can conclude that both groups are really different and our analysis up to this point holds.
@@ -194,34 +190,10 @@ Below we show the quality estimation of our linear discriminant. According to th
 fit.l.cv <- lda(cluster.km.2 ~ ., data = ecosystems, na.action = "na.omit", CV = T) # Linear and crossvalidated
 sum(diag(prop.table(table(ecosystems$cluster.km.2, fit.l.cv$class))))
 ```
-Finally, we predict the cluster that corresponds to the new point (251,241,109,42,25,972,715). As can be seen below, the new point belongs to the clusten number 2 (which corresponds to organically contaminated samples) with almost total certainty. Looking at the values of the new point, this result is congruent with our analysis (as this point has higher-than-the-mean levels for most of the organic contamination variables).
+Finally, we predict the cluster that corresponds to the new point (251,241,109,42,25,972,715). As can be seen below, the new point belongs to the cluster number 1 (which corresponds to organically contaminated samples) with almost total certainty. Looking at the values of the new point, this result is congruent with our analysis (as this point has higher-than-the-mean levels for most of the organic contamination variables).
 
 ```{r}
-require(MASS)
-require(ggplot2)
-require(vegan)
-require(cluster)
-require(factoextra)
-require(clusterSim) # predict
-
 element <- data.frame(Colif_total = 251, Colif_fecal = 241, Estrep_fecal = 109, Cont_mineral = 42, Conductivitat = 25, Solids_susp = 972, DQO_M = 715)
-# element <- element - apply(ecosystems[,-8], MARGIN = 2, mean)
-# element <- element / apply(ecosystems[,-8], MARGIN = 2, sd)
-
-# ecosystems$cluster <- as.factor(result.km.2$cluster)
 fit.l.ncv <- lda(cluster.km.2 ~ ., data = ecosystems, na.action = "na.omit", CV = F) # Should use the non cv for prediction and the cv for analysis of the discriminant itself
-# ct <- table(ecosystems$cluster, predict(fit.l.ncv,ecosystems[, -8])$class) 
-# sum(diag(prop.table(ct)))
 predict(fit.l.ncv, element)
-
-# fit.q.ncv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = F)
-# sum(diag(prop.table(table(ecosystems$cluster, predict(fit.q.ncv, ecosystems[,-8])$class))))
-# predict(fit.q.ncv, element)
-
-# fit.q.cv <- qda(cluster ~ ., data = ecosystems, na.action = "na.omit", CV = T)
-# sum(diag(prop.table(table(ecosystems$cluster, fit.q.cv$class))))
-```
-
-```{r}
-
 ```
