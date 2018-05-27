@@ -201,10 +201,11 @@ distance matrix.
 We're going to both do a first qualitative analysis of the group
 structure through hierarchical clustering methods and then corroborate
 and refine our first results through a more objective analysis using
-clustering quality indicators as \(\Delta TESS\), \(pseudoF\), and
-\(silhouette\) for 1 to 8 groups (as we already explained before, more
-than 5 groups would result in some groups having less than 10 samples,
-thus makin any further inference or discriminant analysis really poor.).
+clustering quality indicators as \emph{Delta TESS}, \emph{pseudoF}, and
+\emph{silhouette} for 1 to 8 groups (as we already explained before,
+more than 5 groups would result in some groups having less than 10
+samples, thus makin any further inference or discriminant analysis
+really poor.).
 
 \textbf{Hierarchical Clustering}
 
@@ -237,10 +238,10 @@ of \emph{k}.
 
 As can be seen below, the hierarchical analysis is ratified by the
 non-hierarchical one. For all indicators, 2 and 3 groups have a higher
-score (in particular, the difference is specially big for
-\(\Delta TESS\)). Specifically, all the indicators for 2 groups are
-higher than for 3. Furthermore, the plot of the individual silhouettes
-for individual elements of each group clearly shows that the difference
+score (in particular, the difference is specially big for \emph{Delta
+TESS}). Specifically, all the indicators for 2 groups are higher than
+for 3. Furthermore, the plot of the individual silhouettes for
+individual elements of each group clearly shows that the difference
 between 2 and 3 groups is likely to be a splitting of the biggest group
 into two smaller ones. This splitting reduces the average silhouette of
 the smallest group and the silhouettes of the two new groups are also
@@ -536,7 +537,7 @@ it with a p-value of 0.05.
 ##   data : g1 
 ## 
 ##   AD              : 0.7579276 
-##   p-value         : 0.819718 
+##   p-value         : 0.8206179 
 ## 
 ##   Result  : Data are multivariate normal (sig.level = 0.05)
 \end{verbatim}
@@ -554,7 +555,7 @@ it with a p-value of 0.05.
 ##   data : g2 
 ## 
 ##   AD              : 0.4142843 
-##   p-value         : 0.6517348 
+##   p-value         : 0.6450355 
 ## 
 ##   Result  : Data are multivariate normal (sig.level = 0.05)
 \end{verbatim}
@@ -607,18 +608,18 @@ quadratic discriminant. The previous inference advocates in favour of
 the linear one, as the covariance matrices seem to be the same (or, at
 least, we cannot reject the possibility that they are the same).
 
-Furthermore, we have \(57 * 7 = 399\) distinct pieces of data (seven for
-each of the samples). If we were to use a linear discriminant, we would
-need to determine \(2 * 7 + 7 * 8 / 2 = 42\) estimators (7 for each
-element of the mean vector of a multinormal distribution of 7 variables
-and \(7 * 8 / 2\) for the variance/covariance matrix). This leaves us
-with a proportion of around 10 pieces of data per estimator, a low but
-assumible amount. If we were to use a quadratic one, we would need to
-determine \(2 * 7 + 2 * 7 * 8 / 2 = 70\) estimators, having only 5.7
-pieces of data per estimator, clearly insufficient. Thus, we decide to
-use a linear one (we also double checked the quadratic one out of
-curiosity and it gave a lower prediction rate when using leave-one-out
-crossvalidation).
+Furthermore, we have \textbf{57 * 7 = 399} distinct pieces of data
+(seven for each of the samples). If we were to use a linear
+discriminant, we would need to determine \textbf{2 * 7 + 7 * 8 / 2 = 42}
+estimators (7 for each element of the mean vector of a multinormal
+distribution of 7 variables and \textbf{7 * 8 / 2} for the
+variance/covariance matrix). This leaves us with a proportion of around
+10 pieces of data per estimator, a low but assumible amount. If we were
+to use a quadratic one, we would need to determine \textbf{2 * 7 + 2 * 7
+* 8 / 2 = 70} estimators, having only 5.7 pieces of data per estimator,
+clearly insufficient. Thus, we decide to use a linear one (we also
+double checked the quadratic one out of curiosity and it gave a lower
+prediction rate when using leave-one-out crossvalidation).
 
 Below we show the quality estimation of our linear discriminant.
 According to this analysis, the discriminant should have a low error
