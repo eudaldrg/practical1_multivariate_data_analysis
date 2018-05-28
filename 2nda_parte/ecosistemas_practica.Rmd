@@ -182,7 +182,6 @@ We first ran a chi-squared test using the boxM command and we got a p-value of a
 # efinsa.manova<-manova(cbind(Colif_total, Colif_fecal, Estrep_fecal, Cont_mineral, Conductivitat, Solids_susp, DQO_M)~cluster.km.2, data = data)
 # summary(efinsa.manova,test = "Pillai")
 # boxM(data[,-8], data[,8])
->>>>>>> 9f87cac14825ec8c3e5beee7af9b8e7f1d928f27
 ```
 
 On the other hand, with a negligible p-value, we can reject the null hypothesis of both groups having the same mean, as can be seen below. With this, we can conclude that both groups are really different and our analysis up to this point holds.
@@ -200,7 +199,7 @@ Furthermore, we have __57 * 7 = 399__ distinct pieces of data (seven for each of
 Below we show the quality estimation of our linear discriminant. According to this analysis, the discriminant should have a low error rate of under 5%.
 
 ```{r}
-fit.l.cv <- lda(cluster.km.2 ~ ., data = data, na.action = "na.omit", CV = T) # Linear and crossvalidated
+fit.l.cv <- lda(cluster.km.2 ~ ., data = data, na.action = "na.omit", CV = T) # crossvalidated
 sum(diag(prop.table(table(data$cluster.km.2, fit.l.cv$class))))
 ```
 
