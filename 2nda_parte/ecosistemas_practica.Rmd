@@ -179,7 +179,11 @@ As they follow multivariate normals, we can test for the homogeneity of their Va
 We first ran a chi-squared test using the boxM command and we got a p-value of around 0.7, so we cannot reject the null hypothesis of the variance-covariance matrix being homogenious.
 
 ```{r, echo = F, message = F, warning=F, error = F}
+<<<<<<< HEAD
+# efinsa.manova<-manova(cbind(Colif_total, Colif_fecal, Estrep_fecal, Cont_mineral, Conductivitat, Solids_susp, DQO_M) ~ cluster.km.2, data = ecosystems)
+=======
 # efinsa.manova<-manova(cbind(Colif_total, Colif_fecal, Estrep_fecal, Cont_mineral, Conductivitat, Solids_susp, DQO_M)~cluster.km.2, data = data)
+>>>>>>> 51cf55814a85e50c905e7e758e8a7a5945491288
 # summary(efinsa.manova,test = "Pillai")
 # boxM(data[,-8], data[,8])
 ```
