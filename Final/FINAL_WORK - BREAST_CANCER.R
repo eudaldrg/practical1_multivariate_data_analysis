@@ -159,14 +159,14 @@ cor(data$Class, data$cluster)
 data.kmeans$centers
 
 ## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
-pca <- princomp(data.numerical)
-pca$sdev^2 / sum(pca$sdev^2)
-pca$loadings
-
-## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
 clusplot(data.numerical, data.kmeans$cluster, 
          col.txt = c("blue", "red")[data.kmeans$cluster], 
          labels = 2, color = TRUE, main = "Kmeans plot", cex = 0)
+
+## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
+pca <- princomp(data.numerical)
+pca$sdev^2 / sum(pca$sdev^2)
+pca$loadings
 
 ## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
 g1<-as.matrix(data.numerical[which(data$cluster==1),]) # Take cluster out
@@ -177,11 +177,6 @@ AD.test(g1, qqplot = FALSE) # can also do royston and henze-zirkler
 
 ## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
 AD.test(g2, qqplot = FALSE) # can also do royston and henze-zirkler
-
-## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
-# library(Hotelling)
-# hotelling.12 <- hotelling.test(g1, g2, perm = TRUE, progBar=F)
-# pvalue.perm <- hotelling.12$pval
 
 ## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------
 data$cluster <- as.factor(data$cluster)
@@ -211,27 +206,17 @@ F <- function(x) {
   # predict(data.model, x)$x
 }
 
-# log(pi2/pi1)
-
 x1 <- c(t(day_1.n.dup[day_1.n.dup$Id == "1182404", c(-1, -11, -12)]))
 x2 <- c(t(day_3.n.dup[day_3.n.dup$Id == "1182404", c(-1, -11, -12)]))
 x3 <- c(t(day_5.n.dup[day_5.n.dup$Id == "1182404", c(-1, -11, -12)]))
-
-# x1 <- c(day_1.n.dup[day_1.n.dup$Id == "1182404", c(-1, -11, -12)])
-# x2 <- c(day_3.n.dup[day_3.n.dup$Id == "1182404", c(-1, -11, -12)])
-# x3 <- c(day_5.n.dup[day_5.n.dup$Id == "1182404", c(-1, -11, -12)])
 v1 <- c(F(x1), F(x2), F(x3))
 
 y1 <- c(t(day_1.n.dup[day_1.n.dup$Id == "1276091", c(-1, -11, -12)]))
 y2 <- c(t(day_2.n.dup[day_2.n.dup$Id == "1276091", c(-1, -11, -12)]))
 y3 <- c(t(day_3.n.dup[day_3.n.dup$Id == "1276091", c(-1, -11, -12)]))
-
-# y1 <- c(day_1.n.dup[day_1.n.dup$Id == "1276091", c(-1, -11, -12)])
-# y2 <- c(day_2.n.dup[day_2.n.dup$Id == "1276091", c(-1, -11, -12)])
-# y3 <- c(day_3.n.dup[day_3.n.dup$Id == "1276091", c(-1, -11, -12)])
 v2 <- c(F(y1), F(y2), F(y3))
 
-plot(v1, ylim = range(c(v1, v2)), type = "l")
+plot(v1, ylim = range(c(v1, v2)), type = "l", ylab = "F(x)", xlab = "Sesión")
 lines(v2, col = "blue")
 
 ## ----echo = FALSE, message=FALSE, warning=FALSE--------------------------

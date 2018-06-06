@@ -326,7 +326,7 @@ good_rate_other_days <- round(sum(diag(prop.table(table(data_other_days$Class + 
 
 Usando este mismo estimador para predecir el valor de los datos en los siguientes dias conseguimos una tasa de exito de `r good_rate_other_days * 100`
 
-Por último, calculando el valor del estadístico discriminante $F(x) = a'(x - 0.5(\mu_1 + \mu_2))$, donde $a = \Sigma^{-1} (\mu_1 - \mu_2)$ y comparandolo con $ ln(\pi_2 / \pi_1) = -0.19 $ se realiza un seguimiento a dos pacientes a lo largo de tres sesiones. A continuación se representa el valor del estadístico versus la sesión. Cada color indica un paciente distinto. Los Id de los pacientes són 1182404 (negro), y 1276091 (azul). Como se puede ver, los valores del indicador son siempre muy superioreas a -0.19, por lo tanto, aunque haya pequeñas fluctuaciones, los pacientes se mantienen siempre claramente en la región de tumores benignos.
+Por último, calculando el valor del estadístico discriminante $$F(x) = a'(x - 0.5(\mu_1 + \mu_2))$$, donde $$a = \Sigma^{-1} (\mu_1 - \mu_2)$$ y comparandolo con $$ln(\pi_2 / \pi_1) = -0.19$$ se realiza un seguimiento a dos pacientes a lo largo de tres sesiones. A continuación se representa el valor del estadístico versus la sesión. Cada color indica un paciente distinto. Los Id de los pacientes són 1182404 (negro), y 1276091 (azul). Como se puede ver, los valores del indicador son siempre muy superioreas a -0.19, por lo tanto, aunque haya pequeñas fluctuaciones, los pacientes se mantienen siempre claramente en la región de tumores benignos.
 
 ```{r echo = FALSE, message=FALSE, warning=FALSE}
 mu1 <- apply(g1, 2, mean)
