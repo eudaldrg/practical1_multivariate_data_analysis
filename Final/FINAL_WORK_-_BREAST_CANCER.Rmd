@@ -1,0 +1,372 @@
+---
+title: "Diagnóstico de cáncer de mama"
+author: "Eudald Romo y Laura Santulario Verdú"
+date: "9 de mayo de 2018"
+output: pdf_document
+---
+
+
+# Introducción  
+
+Los datos en los que se basa este estudio ha sido obtenidos de un análisis cronológico (que tuvo lugar entre 1989 y 1991) sobre el diagnóstico del cáncer de mama en una muestra de 367 mujeres que se encontraban bajo seguimiento médico en hospitales de Wisconsin. Para hacer este análisis se estudiaron los cambios morfológicos en el tejido de la mama afectada por medio de citologías.
+
+Nosotros planteamos un nuevo estudio sobre este data set con dos objetivos principales. En primer lugar, queremos realizar un análisis de corroboración. Es decir, a partir de los datos sin diagnóstico, vamos a realizar un análisis estructural para separar las mujeres en grupos (previesible y esperablemente en dos grupos, tumor benigno y maligno). Una vez realizado el análisis estructural, vamos a proponer un discriminante para los datos, vamos a corroborar que los dos grupos son distintos y vamos a comparar los resultados obtenidos con el estudio inicial.
+
+Consideramos que lo más útil desde un punto de vista médico seria generar un estadístico discriminante durante la primera sesión (que es la que tiene más muestras con diferencia) e intentar predecir el diagnóstico de los pacientes de las sesiones posteriores.
+
+En segundo lugar, aprovechando que tenemos datos de las pacientes en diferentes puntos temporales, haremos un estudio de seguimiento y observaremos la evolución de los tumores malignos en una selección de mujeres. El estudio de seguimiento serviría (teóricamente) para prevenir la aparición de cánceres malignos y empezar su tratamiento cuando aún estan en desarrollo. Es decir, si una mujer diera indicios de evolucionar en dirección a cáncer maligno, se podria empezar el tratamiento con valores más pequeños del estadístico discriminante: si el cambio de benigno a maligno estuviera en F(X) = 5 y una paciente empezara con un valor de 1 y fuera subiendo consistentemente, se podria empezar el tratamiento mucho antes. Somos conscientes que decidir el valor en el que empezar el tratamiento a partir de un estudio de seguimiento escapa el ámbito de la asignatura. Por lo tanto nos vamos a limitar a exponer los valores del seguimiento y a valorarlos cualitativamente. Sin embargo creemos que el seguimiento aporta valor al dataset estudiado y que sería útil en un entorno médico, calculando adecuadamente el valor de corte.
+
+Las variables que se tienen en cuenta en el siguiente estudio son:   
+
+__Thickness__ : el espesor de la masa tumoral (las células cancerosas tienden a agruparse formando multicapas)  
+
+__Size__: tamaño uniforme de las células tumorales (las células cancerosas tienden a tener un tamaño muy variable)  
+
+__Shape__: formas homogéneas de las células tumorales (las células cancerosas tienden a tener formas muy heterogéneas)   
+
+__Adhesion__: modo en el que se adhieren las células tumorales unas con otras (las células cancerígenas tienen menos adhesión que las células sanas)
+
+__SingleCellSize__: el grosor de una capa de epitelio que forma la masa (las células cancerosas tienden a tener capas más gruesas)
+
+__Nuclei__: núcleo (en las células cancerosas resulta difícil identificar el núcleo)  
+
+__Chromatin__: cromatina (en células cancerosos la cromatina suele ser muy gruesa)  
+
+__Nucleoli__: nucleolos (en las células cancerosas resulta fácil identificarlos, mientras que en las células sanas es muy difícil observarlos)
+
+__mitoses__: mitosis atípicas  
+
+__Class__: la clasificación del tumor en benigno o maligno
+
+Antes de empezar el estudio mencionado anteriormente, analizaremos las muestras y las distintas variables.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+# Leemos los datos
+# setwd("C:\\Users\\TOSHIBA\\Documents\\GitHub\\practical1_multivariate_data_analysis\\TRABAJO FINAL")
+data_raw <- read.table("diagnosis breast cancer.txt", sep = ",", header = TRUE)
+colnames(data_raw) <- c("Id", "Thickness", "Size", "Shape", "Adhesion", "SingleCellSize", "Nuclei", "Chromatin", "Nucleoli", "Mitoses", "Class")
+
+data_raw[which(data_raw[, 11] == 2), 11] <- 0
+data_raw[which(data_raw[, 11] == 4), 11] <- 1
+
+for (i in seq(from = 1, to = nrow(data_raw))) {
+  if (i <= 367) {
+    data_raw$Day[i] <- 1
+  } else if (i <= 367 + 70) {
+    data_raw$Day[i] <- 2
+  } else if (i <= 367 + 70 + 31) {
+    data_raw$Day[i] <- 3
+  } else if (i <= 367 + 70 + 31 +  17){
+    data_raw$Day[i] <- 4
+  } else if (i <= 367 + 70 + 31 +  17 + 48){
+    data_raw$Day[i] <- 5
+  } else if (i <= 367 + 70 + 31 +  17 + 48 + 49){
+    data_raw$Day[i] <- 6
+  } else if (i <= 367 + 70 + 31 +  17 + 48 + 49 + 31){
+    data_raw$Day[i] <- 7
+  } else if (i <= 367 + 70 + 31 +  17 + 48 + 49 + 31 + 86){
+    data_raw$Day[i] <- 8
+  }
+}
+
+# Detectar los missing values
+missings <- which(data_raw == "?", arr.ind=T) 
+library(gdata)
+
+data_raw[, 7] <- as.numeric(gsub("?", round(mean(as.numeric(drop.levels(data_raw[!(rownames(data_raw) %in% missings[, 1]), 7]))), 2), data_raw[, 7], fixed = TRUE))
+
+# Definimos los datos de cada uno de los 8 grupos
+day_1 <- data_raw[data_raw$Day == 1, ]
+day_2 <- data_raw[data_raw$Day == 2, ]
+day_3 <- data_raw[data_raw$Day == 3, ]
+day_4 <- data_raw[data_raw$Day == 4, ]
+day_5 <- data_raw[data_raw$Day == 5, ]
+day_6 <- data_raw[data_raw$Day == 6, ]
+day_7 <- data_raw[data_raw$Day == 7, ]
+day_8 <- data_raw[data_raw$Day == 8, ]
+
+
+day_1.n.dup <- subset(day_1, !duplicated(subset(day_1, select = Id)))
+day_2.n.dup <- subset(day_2, !duplicated(subset(day_2, select = Id)))
+day_3.n.dup <- subset(day_3, !duplicated(subset(day_3, select = Id)))
+day_4.n.dup <- subset(day_4, !duplicated(subset(day_4, select = Id)))
+day_5.n.dup <- subset(day_5, !duplicated(subset(day_5, select = Id)))
+day_6.n.dup <- subset(day_6, !duplicated(subset(day_6, select = Id)))
+day_7.n.dup <- subset(day_7, !duplicated(subset(day_7, select = Id)))
+day_8.n.dup <- subset(day_8, !duplicated(subset(day_8, select = Id)))
+
+library(plyr)
+table.cont <- count(day_1.n.dup[,], "Class")
+table.cont <- as.data.frame(table.cont)
+colnames(table.cont) <- c("Clase", "Frecuencia")
+table.cont$Prop <- round(100*table.cont$Frecuencia/
+                           sum(table.cont[1:2, 2]), 2)
+table.cont <- table.cont[1:2, ]
+
+table.cont <- kable(table.cont, format = "markdown")
+
+# sum(day_1$Id %in% day_2$Id)
+# sum(day_1$Id %in% day_3$Id)
+# sum(day_1$Id %in% day_4$Id)
+# data_raw$Day
+# data_raw$Class==2cor(data_raw)
+```
+
+
+# Análisis previo
+
+Los datos de este estudio se han obtenido del hospital universitario de Wisconsin, y el conjunto de datos empleado en este informe es el *breast-cancer-wisconsin.data*, disponible en *https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Original%29*. Esta base de datos cuenta con 698 observaciones divididas en 8 grupos (correspondientes a los diferentes periodos en los que se analizaron las muestras citológicas):  
+
++ Grupo 1: 367 casos (Enero 1989)  
++ Grupo 2:  70 casos (Octubre 1989)  
++ Grupo 3:  31 casos (Febrero 1990)  
++ Grupo 4:  17 casos (Abril 1990)  
++ Grupo 5:  48 casos (Agosto 1990)  
++ Grupo 6:  49 casos (Enero 1991)  
++ Grupo 7:  31 casos (Junio 1991)  
++ Grupo 8:  86 casos (Noviembre 1991)  
+
+En algunos periodos, se toma más de una muestra para ciertos pacientes. Al no saber el motivo por el cual se repitieron esas muestras, en cada periodo temporal descartaremos las muestras de personas que repitieron la citologia. Además, nuestro dataset presenta *missings values* en 16 registros de la variable *Nuclei*. Tenemos muestras suficientes para los análisis que vamos a realizar (como ya comentaremos más adelante) por lo que sencillamente descartaremos tambien muestras con valor de *Nuclei* inválido, quedándonos entonces con los siguientes datos:  
+
++ Grupo 1: 347 casos (Enero 1989)  
++ Grupo 2:  65 casos (Octubre 1989)  
++ Grupo 3:  30 casos (Febrero 1990)  
++ Grupo 4:  17 casos (Abril 1990)  
++ Grupo 5:  46 casos (Agosto 1990)  
++ Grupo 6:  47 casos (Enero 1991)  
++ Grupo 7:  31 casos (Junio 1991)  
++ Grupo 8:  79 casos (Noviembre 1991)
+
+Cada muestra tiene 10 variables: 9 son las que hemos descrito anteriormente y representan los cambios morfológicos de las células mamarias (representadas por valores discretos entre 1 y 10) y una variable dicotómica que caracteriza si el tumor es benigno o maligno (0 - benigno; 1 - maligno).
+
+Un primer análisis del estudio en el que se basa nuestro data set, nos permite intuir (muy cualitativamente) que valores bajos de cada variable corresponden a tumores benignos y valores altos a malignos. Debajo de este párrafo se puede observar la media de las variables para tumores benignos y malignos.
+
+__ Media Tumores Benignos__
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+benign <- subset(day_1.n.dup[,], Class == 0)
+round(apply(benign[, 2:10], 2, mean), 2)
+```
+__Media Tumores Malignos__  
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+malign <- subset(day_1.n.dup[,], Class == 1)
+round(apply(malign[, 2:10], 2, mean), 2)
+```
+
+Como se puede observar el la siguiente tabla en nuestro estudio hay aproximadamente la misma proporción de mujeres con tumores de mama benignos (53.31%) que malignos (46.69%), con lo que esperamos ver 2 clusters de aproximadamente el mismo tamaño.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+table.cont
+```
+
+# Análisis
+
+Para realizar el estudio estructural, es necesaria una medida de similitud/distancia entre las variables. Como lo que se busca es caracterizar diferencias, no definir perfiles ni dependencia/independencia, sólo se han barajado dos opciones, la distancia Euclídea y la de Mahalanobis. La matriz de correlaciones (tabla inferior) y indica cierta relación entre las variables, pero al realizar nuestro estudio sobre uno de previo, creemos razonable mantener estas correlaciones, ya que podrían implicar dar ciertos pesos a metavariables (como la forma, la actividad biológica de la célula, ...) que los investigadores del estudio previo introdujeron conscientemente. Por este motivo hemos elegido la distancia Euclídea. 
+Cabe destacar que la distancia Euclídea se usa generalmente para variables reales. En este caso, las variables son enteras, pero a diferencia de ciertas variables categóricas, éstas representan claramente un valor cuantitativo. Por este motivo, el hecho que sean variables enteras se puede entender cómo un problema de precisión (solo tenemos una cifra significativa) y la distancia Euclídea puede ser usada tranquilamente.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+round(cor(day_1.n.dup[, 2:10]), 2)
+```
+
+A continuación se realizará un análisis jerárquico con el método Ward.D2 (por su similitud al método no jerárquico de k-means) de las muestras del primer dia que se usará para decidir un rango de número de clusters a analizar mediante un análisis no jerárquico.
+
+Este análisis no jerárquico, usará el método *k-means* para calcular los indicadores *Delta TESS*, *pseudoF* y *average silhouette*. Se elegirá un número de clusters y se obtendrá la clasificación mediante k-means.
+
+Los grupos obtenidos serán contrastados por inferencia (usando el test __Hotelling T2 de permutaciones__ ya que, como se verá más adelante uno de los grupos no sigue una normal multivariante).
+
+A partir de los grupos se obtendrá un discriminador (lineal o cuadrático), se comprovará su rendimiento con Leave-One-Out Crossvalidation y se compararan las predicciones obtenidas por nuestro discriminante con las obtenidas en el diagnóstico. 
+
+Finalmente, se compararán las predicciones de nuestro discriminador tanto con las variables dicotómicas que definen si la paciente tiene o no un tumor maligno. Esta comparación se hará tanto en el primer día (para comparar con las muestras de entrenamiento) como en el conjunto de los otros dias (muestras de comprovación).
+
+Por otro lado, se usará el mismo discriminador para realizar un seguimiento a lo largo de tres sesiones a dos pacientes distintos y se comentarán los resultados obtenidos.
+
+# Resultados    
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+require(stats) # ?dist 
+require(vegan) # ?vegdist, ?cascadeKM
+require(ade4)  # ?dist.binary
+require(ape)
+require(cclust) # ?clusplot (better explained at ?clusplot.default)
+require(cluster)
+require(clusterSim) # lda and qda or predict or something
+require(mvnTest) # Multivariate normality test
+require(factoextra)
+require(MASS)
+require(biotools) # Covariance Homogeneity test
+require(ICSNP) # T2
+require(Hotelling) # T2 Permutation Test
+# source("./Utils.R")
+
+data <- day_1.n.dup
+data.numerical <- day_1.n.dup[, 2:10]
+data.dist <- dist(data.numerical, method = "euclid")
+data.hierarchical <- hclust(data.dist, method="ward.D2") # or single, complete, or ward.D2
+plot(data.hierarchical, hang=-1) #, labels=data[,1])
+
+```
+
+Del análisis jerárquico podemos ver cualitativamente que el número de clusters posiblemente va a ser 2 y que dificilmente va a haber mas de 5 grupos. Por este motivo calcularemos los índices de calidad no jerárquicos para un número de grupos entre 1 y 5.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+require(mvnTest)
+require(ICSNP)
+require(Hotelling)
+require(MASS)
+require(cclust)
+library(cluster)
+
+results<-data.frame()
+for(x in c (1,2,3,4,5)){
+  result.km.x = kmeans(data.numerical, centers=x, nstart=1000)
+  Silh.km.x<-silhouette(result.km.x$cluster,dist(data.numerical))
+  
+  # result.pam.x <- pam(countries.dist, centers = x, diss = TRUE)
+  # Silh.pam.x <- result.pam.x$
+  
+  results[(x),1]<-x
+  results[(x),2]<-result.km.x$totss
+  results[(x),3]<-result.km.x$tot.withinss
+  
+  if (x != 1) {
+    PseudoF.km.x<-clustIndex(result.km.x, data.numerical, index="calinski")
+    results[(x),4]<-PseudoF.km.x
+  } else {
+    results[x,4] <- NA
+  }
+  
+  if (x == 1) {
+    results[(x),5]<- NA
+    results[(x),6]<- NA
+  } else {
+    Overall.Silh.km.x<-mean(Silh.km.x[,3])
+    results[(x),5]<-Overall.Silh.km.x
+    results[(x),6]<- (results[(x-1),3] - results[(x),3]) / results[(x-1),3]
+  }
+  # if (x != 1 && x < 4) plot(Silh.km.x)
+}
+colnames(results)<-c("K","TOTSS","WITHINSS","PseudoF","AvgSilh","DeltaTESS")
+
+results
+```
+
+Todos los indicadores coinciden en que el número de clusters es 2, cosa que corresponde tanto con el análisis jerárquico como con el resultado que esperábamos desde el inicio. Debajo de este parrafo se calcula la correlación entre los clusters calculados en este análisis y el diagnóstico real. Hay una alta correlación positiva, con lo que el cluster 2 se corresponde con el valor 1 de la variable dicotómica (tumor maligno) y el cluster 2 corresponde a tumores benignos.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+number_of_clusters <- 2
+data.kmeans <- kmeans(data.numerical, centers = number_of_clusters)
+data$cluster <- data.kmeans$cluster
+
+cor(data$Class, data$cluster)
+```
+
+Para poder caracterizar estos dos grupos se analizan los representantes (figura bajo el párrafo). El representante del grupo 2 se correspondería con muestras de tumores malignos (__Class__ $\sim$ 1), al tener valores altos en todas las variables quantitativas, mientras que el representante del grupo 1 se corresponde con tumores benignos.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+data.kmeans$centers
+``` 
+
+Para interpretar mejor los clusters representaremos nuestras observaciones en un espacio de dimensión reducida mediante PCA. Elegiremos un número de ejes principales de interés usando como indicador de calidad la vaiabilidad explicade e interpretaremos cada eje principal con los vectores propios del PCA.
+
+Con dos componentes se puede explicar el 72% de la variabilidad (ver resultados debajo de este párrafo), que posiblemente será suficiente para interpretar los clusters obtenidos. La variabilidad explicada por la primera componente principal es mucho mayor que la de las otras, y añadir una tercera dimension complicaría la representación de los datos (deberíamos dar varias perspectivas elegidas adecuadamente para visualizarlos correctamente en este informe) para ganar sólo un 7% de variabilidad. Es por este motivo que hemos decidido mostrar los valores en 2 dimensiones. Las elipses se muestran solamente para señalar que hay una región de intersección entre los dos clusters que hace especialmente necesario un análisis de inferencia para determinar que los grupos son realmente distintos.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+clusplot(data.numerical, data.kmeans$cluster, 
+         col.txt = c("blue", "red")[data.kmeans$cluster], 
+         labels = 2, color = TRUE, main = "Kmeans plot", cex = 0)
+```
+
+Se puede observar que la PC1 está influenciada por todas las variables. Crece al crecer cualquiera de las variables y el peso de __Chromatin__, __Mitoses__, y __SingleCellSize__ es aproximadamente la mitad que de las demás variables. La PC2 va principalmente ligada al crecimiento de __Nuclei__, la PC3 al crecimiento de __Thickness__ y, en general, las otras componentes van ligadas principalmente a una variable cada una. Observando el plot, los cambios significativos entre los clusters estan en la PC1, en la PC2 no hay ninguna diferencia significativa (a simple vista se ve que los posibles cambios del valor medio de la PC2 entre clusters son mucho más pequeños que la varianza de cada cluster en esa dirección). Todo esto indica que, possiblemente, la diferencia entre clusters sea prácticamente la debida a la PC1. Ademàs, PC1 grande se corresponde con tumores malignos.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+pca <- princomp(data.numerical)
+pca$sdev^2 / sum(pca$sdev^2)
+pca$loadings
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+g1<-as.matrix(data.numerical[which(data$cluster==1),]) # Take cluster out
+g2<-as.matrix(data.numerical[which(data$cluster==2),]) # Take cluster out
+```
+
+Para inferir si los grupos son realmente distintos, primero es necesario ver si ambos grupos siguen normales multivariadas. A continuación se muestra el resultado del test Anderson-Darling para normalidad multivariada en cada grupo. Como se puede comprovar, el cluster 1 no sigue una normal multivariada.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+AD.test(g1, qqplot = FALSE) # can also do royston and henze-zirkler
+```
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+AD.test(g2, qqplot = FALSE) # can also do royston and henze-zirkler
+```
+
+Para validar que, en realidad, estos grupos son distintos se ha aplicado el test __Hotelling T2 de permutaciones__, al no seguir los grupos una distribución normal multivariada:  
+
+$$H_0: Grupo_1 = Grupo_2$$ $$H_1: Grupo_1 \neq Grupo_2$$  
+
+Obteniendo un p-valor negligible (se muestra como 0 en el resultado del test) y por tanto podemos afirmar que existe evidencia estadísticamente significativa para rechazar $H_0$ y aceptar la hipótesis alternativa que nos dice que los grupos son diferentes.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+data$cluster <- as.factor(data$cluster)
+data.fit <- lda(cluster ~ ., data = data[, c(-1, -11, -12)], na.action = "na.omit", CV = T)
+data.model <- lda(cluster ~ ., data = data[, c(-1, -11, -12)], na.action = "na.omit", CV = F)
+good_clusters <- sum(diag(prop.table(table(data$cluster, data.fit$class))))
+good_classes <- sum(diag(prop.table(table(data$Class, data.fit$class))))
+```
+
+Llegados a este punto se decide hacer un discriminante lineal para separar nuestras muestras. Hemos comprobado que este discriminante es un buen clasificador pues la tasa de error con leave-one-out crossvalidation es muy baja, `r (1 - good_clusters)`.
+
+Además se ha comprovado cuál es la tasa de acierto del discriminador respecto el diagnóstico real es de `r good_classes` 
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+data_other_days <- rbind(day_2.n.dup, day_3.n.dup, day_4.n.dup, day_5.n.dup, day_6.n.dup, day_7.n.dup, day_8.n.dup)
+good_rate_other_days <- round(sum(diag(prop.table(table(data_other_days$Class + 1, predict(data.model, data_other_days[,c(-1, -11, -12)])$class)))), 2)
+```
+
+Usando este mismo estimador para predecir el valor de los datos en los siguientes dias conseguimos una tasa de exito de `r good_rate_other_days * 100`
+
+Por último, calculando el valor del estadístico discriminante $F(x) = a'(x - 0.5(\mu_1 + \mu_2))$, donde $a = \Sigma^{-1} (\mu_1 - \mu_2)$ y comparandolo con $ ln(\pi_2 / \pi_1) = -0.19 $ se realiza un seguimiento a dos pacientes a lo largo de tres sesiones. A continuación se representa el valor del estadístico versus la sesión. Cada color indica un paciente distinto. Los Id de los pacientes són 1182404 (negro), y 1276091 (azul). Como se puede ver, los valores del indicador son siempre muy superioreas a -0.19, por lo tanto, aunque haya pequeñas fluctuaciones, los pacientes se mantienen siempre claramente en la región de tumores benignos.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE}
+mu1 <- apply(g1, 2, mean)
+mu2 <- apply(g2, 2, mean)
+s1 <- cov(g1)
+s2 <- cov(g2)
+n1 <- nrow(g1)
+n2 <- nrow(g2)
+pi1 <- n1 / (n1 + n2)
+pi2 <- n2 / (n1 + n2)
+cov <- ((n1 - 1) * s1 + (n2 - 1) * s2) / (n1 + n2 - 2)
+library(matlib)
+a <- inv(cov) %*% (mu1 - mu2)
+F <- function(x) {
+  t(a) %*% (x - 0.5 * (mu1 + mu2))
+  # predict(data.model, x)$x
+}
+
+x1 <- c(t(day_1.n.dup[day_1.n.dup$Id == "1182404", c(-1, -11, -12)]))
+x2 <- c(t(day_3.n.dup[day_3.n.dup$Id == "1182404", c(-1, -11, -12)]))
+x3 <- c(t(day_5.n.dup[day_5.n.dup$Id == "1182404", c(-1, -11, -12)]))
+v1 <- c(F(x1), F(x2), F(x3))
+
+y1 <- c(t(day_1.n.dup[day_1.n.dup$Id == "1276091", c(-1, -11, -12)]))
+y2 <- c(t(day_2.n.dup[day_2.n.dup$Id == "1276091", c(-1, -11, -12)]))
+y3 <- c(t(day_3.n.dup[day_3.n.dup$Id == "1276091", c(-1, -11, -12)]))
+v2 <- c(F(y1), F(y2), F(y3))
+
+plot(v1, ylim = range(c(v1, v2)), type = "l", ylab = "F(x)", xlab = "Sesión")
+lines(v2, col = "blue")
+```
+
+# Conclusión
+
+En primer lugar, el análisis discriminante se corresponde en gran medida al diagnóstico real y los análisis de inferencia permiten corroborar que el estudio en el que se basa este dataset realmente obtiene dos grupos diferenciados.
+
+En segundo lugar, hemos mostrado que el análisis discriminante es capaz de predecir perfectamente el diagnóstico de pacientes de sesiones futuras, una vez inicializado con suficientes variables. Esto permite tener una base sobre la cual detectar posibles errores en diagnósticos futuros, una vez realizados sufientes diagnósticos iniciales. No debería ser utilizado para sustituir el diagnóstico médico real, pero se podrían repetir pruebas o análisis que dieran resultados muy incongruentes con el discriminador lineal que hemos obtenido.
+
+Por último, este discriminador nos permite realizar estudios de seguimiento que podrían derivar en tratamientos preventivos de cánceres de mama. Por falta de personas que asistieran a una gran cantidad de sesiones, nos hemos visto obligados a analizar dos pacientes que claramente estaban en la región de tumores benignos, las pocas fluctuaciones que hay en el estadístico discriminante para estos pacientes no da mucho juego a explicar su evolución, sin embargo esto no le resta importancia a esta herramienta, que permite realizar seguimiento a los pacientes y desarrollar planes de acción para pacientes que evolucionan peligrosamente hacia un tumor maligno.
+
+```{r echo = FALSE, message=FALSE, warning=FALSE }
+purl("FINAL_WORK - BREAST_CANCER.Rmd")
+```
